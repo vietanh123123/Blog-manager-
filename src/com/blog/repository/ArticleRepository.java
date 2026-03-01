@@ -146,8 +146,19 @@ public class ArticleRepository {
                 rs.next();
                 // Set the database-generated values back on the object
                 article.setId(rs.getLong("id"));
-                article.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
-                article.setUpdatedAt(rs.getTimestamp("updated_at").toLocalDateTime());
+                java.sql.Timestamp createdAt = rs.getTimestamp("created_at");
+                if (createdAt != null) {
+                    article.setCreatedAt(createdAt.toLocalDateTime());
+                } else {
+                    article.setCreatedAt(null);
+                }
+               java.sql.Timestamp updatedAt = rs.getTimestamp("updated_at");
+                if (updatedAt != null) {
+                    article.setUpdatedAt(updatedAt.toLocalDateTime());
+                } else {
+                    article.setUpdatedAt(null);
+                }
+
             }
 
             return article;
@@ -226,14 +237,19 @@ public class ArticleRepository {
         article.setId(rs.getLong("id"));
         article.setTitle(rs.getString("title"));
         article.setContent(rs.getString("content"));
-        article.setDate(rs.getDate("date").toLocalDate());
+
+        // Date might be null, handle safely
+        Date date = rs.getDate("date");
+        article.setDate(date != null ? date.toLocalDate() : null);
+
         article.setPublished(rs.getBoolean("published"));
 
-        // Timestamps might be null if not set, so we check
+        // Timestamps might be null if not set, so we check and explicitly set null
         Timestamp createdAt = rs.getTimestamp("created_at");
+        article.setCreatedAt(createdAt != null ? createdAt.toLocalDateTime() : null);
+
         Timestamp updatedAt = rs.getTimestamp("updated_at");
-        if (createdAt != null) article.setCreatedAt(createdAt.toLocalDateTime());
-        if (updatedAt != null) article.setUpdatedAt(updatedAt.toLocalDateTime());
+        article.setUpdatedAt(updatedAt != null ? updatedAt.toLocalDateTime() : null);
 
         return article;
     }
