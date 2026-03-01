@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Personal Blog</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; background-color: #f5f5f5; line-height: 1.6; }
+        header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem 1rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header-content { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        h1 { font-size: 2rem; cursor: pointer; }
+        .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.3s; text-decoration: none; display: inline-block; }
+        .btn-primary { background: white; color: #667eea; }
+        .btn-primary:hover { background: #f0f0f0; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-success:hover { background: #059669; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-secondary { background: #6b7280; color: white; }
+        .btn-secondary:hover { background: #4b5563; }
+        .container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
+        .article-card { background: white; border-radius: 12px; padding: 2rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: transform 0.3s, box-shadow 0.3s; cursor: pointer; border: 1px solid #e5e7eb; }
+        .article-card:hover { transform: translateY(-4px); box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
+        .article-title { font-size: 1.75rem; color: #1f2937; margin-bottom: 0.5rem; }
+        .article-date { color: #6b7280; font-size: 0.875rem; margin-bottom: 1rem; }
+        .article-preview { color: #4b5563; margin-bottom: 1rem; }
+        .article-content { color: #374151; white-space: pre-wrap; line-height: 1.8; margin-bottom: 1.5rem; }
+        .read-more { color: #667eea; font-weight: 600; text-decoration: none; }
+        .read-more:hover { color: #764ba2; }
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+        .dashboard-header h2 { font-size: 2.5rem; color: #1f2937; }
+        .dashboard-article { background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+        .article-info h3 { font-size: 1.5rem; color: #1f2937; margin-bottom: 0.25rem; }
+        .action-buttons { display: flex; gap: 0.5rem; }
+        .form-container { background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: #374151; }
+        .form-group input, .form-group textarea { width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 1rem; font-family: inherit; }
+        .form-group textarea { min-height: 300px; resize: vertical; }
+        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+        .form-actions { display: flex; gap: 1rem; }
+        .back-link { display: inline-block; color: #667eea; text-decoration: none; margin-bottom: 1.5rem; font-weight: 600; }
+        .back-link:hover { color: #764ba2; }
+        .hidden { display: none; }
+
+        /* Loading & error states */
+        .loading { text-align: center; padding: 3rem; color: #6b7280; font-size: 1.1rem; }
+        .loading::after { content: ''; display: inline-block; width: 20px; height: 20px; border: 3px solid #e5e7eb; border-top-color: #667eea; border-radius: 50%; animation: spin 0.8s linear infinite; margin-left: 10px; vertical-align: middle; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .error-banner { background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; padding: 1rem 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .error-banner button { background: none; border: none; cursor: pointer; color: #991b1b; font-size: 1.2rem; }
+        .success-banner { background: #d1fae5; border: 1px solid #6ee7b7; color: #065f46; padding: 1rem 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 1.5rem; }
+            .dashboard-header h2 { font-size: 2rem; }
+            .article-title { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="header-content">
+        <h1 id="siteTitle">My Personal Blog</h1>
+        <button class="btn btn-primary" id="adminToggle">Admin</button>
+    </div>
+</header>
+
+<div class="container">
+    <!-- Home Page -->
+    <div id="homePage" class="page">
+        <h2 style="font-size: 2.5rem; color: #1f2937; margin-bottom: 2rem;">Latest Articles</h2>
+        <div id="articlesList"></div>
+    </div>
+
+    <!-- Article Page -->
+    <div id="articlePage" class="page hidden">
+        <a href="#" class="back-link" id="backToHome">← Back to Home</a>
+        <div id="articleDetail"></div>
+    </div>
+
+    <!-- Dashboard Page -->
+    <div id="dashboardPage" class="page hidden">
+        <div class="dashboard-header">
+            <h2>Dashboard</h2>
+            <button class="btn btn-success" id="addNewArticle">+ Add New Article</button>
+        </div>
+        <div id="dashboardNotification"></div>
+        <div id="dashboardArticles"></div>
+    </div>
+
+    <!-- Add Article Page -->
+    <div id="addArticlePage" class="page hidden">
+        <a href="#" class="back-link" id="backToDashboardFromAdd">← Back to Dashboard</a>
+        <div class="form-container">
+            <h2 style="margin-bottom: 1.5rem; color: #1f2937;">Add New Article</h2>
+            <form id="addArticleForm">
+                <div class="form-group">
+                    <label for="addTitle">Title</label>
+                    <input type="text" id="addTitle" required>
+                </div>
+                <div class="form-group">
+                    <label for="addDate">Publication Date</label>
+                    <input type="date" id="addDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="addContent">Content</label>
+                    <textarea id="addContent" required></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-success" id="addSubmitBtn">Publish Article</button>
+                    <button type="button" class="btn btn-secondary" id="cancelAdd">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Article Page -->
+    <div id="editArticlePage" class="page hidden">
+        <a href="#" class="back-link" id="backToDashboardFromEdit">← Back to Dashboard</a>
+        <div class="form-container">
+            <h2 style="margin-bottom: 1.5rem; color: #1f2937;">Edit Article</h2>
+            <form id="editArticleForm">
+                <div class="form-group">
+                    <label for="editTitle">Title</label>
+                    <input type="text" id="editTitle" required>
+                </div>
+                <div class="form-group">
+                    <label for="editDate">Publication Date</label>
+                    <input type="date" id="editDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="editContent">Content</label>
+                    <textarea id="editContent" required></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-success" id="editSubmitBtn">Update Article</button>
+                    <button type="button" class="btn btn-secondary" id="cancelEdit">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // =====================================================
+    // API CONFIGURATION
+    // =====================================================
+    // This is the base URL of your Java backend.
+    // All fetch() calls will be made to this URL.
+    const API_BASE = 'http://localhost:8080/api';
+
+    // =====================================================
+    // API HELPER FUNCTIONS
+    // =====================================================
+    // These functions use the browser's built-in `fetch()` API
+    // to make HTTP requests to your Java backend.
+
+    /**
+     * GET request: fetch data from the backend.
+     * fetch(url) defaults to GET method.
+     */
+    async function apiGet(path) {
+        const response = await fetch(`${API_BASE}${path}`);
+        if (!response.ok) throw new Error(`GET ${path} failed: ${response.status}`);
+        return response.json(); // parse the JSON response body
+    }
+
+    /**
+     * POST request: send new data to the backend to create a record.
+     * We send JSON in the request body.
+     */
+    async function apiPost(path, data) {
+        const response = await fetch(`${API_BASE}${path}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }, // tell backend we're sending JSON
+            body: JSON.stringify(data)                         // convert JS object → JSON string
+        });
+        if (!response.ok) throw new Error(`POST ${path} failed: ${response.status}`);
+        return response.json();
+    }
+
+    /**
+     * PUT request: send updated data to the backend to update a record.
+     */
+    async function apiPut(path, data) {
+        const response = await fetch(`${API_BASE}${path}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) throw new Error(`PUT ${path} failed: ${response.status}`);
+        return response.json();
+    }
+
+    /**
+     * DELETE request: remove a record from the backend.
+     */
+    async function apiDelete(path) {
+        const response = await fetch(`${API_BASE}${path}`, { method: 'DELETE' });
+        if (!response.ok) throw new Error(`DELETE ${path} failed: ${response.status}`);
+        // DELETE returns 204 No Content (no body), so we don't parse JSON
+    }
+
+    // =====================================================
+    // STATE & UTILITIES
+    // =====================================================
+    let isAdmin = false;
+    let editingArticleId = null;
+
+    function showPage(pageId) {
+        document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+        document.getElementById(pageId).classList.remove('hidden');
+    }
+
+    function formatDate(dateString) {
+        // dateString from backend is "2024-01-15"
+        const [year, month, day] = dateString.split('-').map(Number);
+        const date = new Date(year, month - 1, day);
+        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    function showLoading(containerId) {
+        document.getElementById(containerId).innerHTML = '<div class="loading">Loading</div>';
+    }
+
+    function showDashboardNotification(message, type = 'success') {
+        const el = document.getElementById('dashboardNotification');
+        el.innerHTML = `<div class="${type === 'success' ? 'success-banner' : 'error-banner'}">${message}</div>`;
+        setTimeout(() => el.innerHTML = '', 3000);
+    }
+
+    // =====================================================
+    // HOME PAGE: Render published articles
+    // =====================================================
+    async function renderArticlesList() {
+        const container = document.getElementById('articlesList');
+        showLoading('articlesList');
+
+        try {
+            // GET http://localhost:8080/api/articles/published
+            const articles = await apiGet('/articles/published');
+
+            if (articles.length === 0) {
+                container.innerHTML = '<p style="color: #6b7280;">No articles published yet.</p>';
+                return;
+            }
+
+            container.innerHTML = articles.map(article => `
+                    <div class="article-card" data-id="${article.id}">
+                        <h3 class="article-title">${article.title}</h3>
+                        <p class="article-date">Published on ${formatDate(article.date)}</p>
+                        <p class="article-preview">${article.content.substring(0, 200)}...</p>
+                        <a href="#" class="read-more">Read more →</a>
+                    </div>
+                `).join('');
+
+            container.querySelectorAll('.article-card').forEach(card => {
+                card.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    viewArticle(parseInt(card.dataset.id));
+                });
+            });
+        } catch (err) {
+            container.innerHTML = `
+                    <div class="error-banner">
+                        ⚠️ Could not connect to the backend. Make sure your Java server is running at http://localhost:8080
+                        <span style="font-size:0.85rem;display:block;margin-top:4px">Error: ${err.message}</span>
+                    </div>`;
+        }
+    }
+
+    // =====================================================
+    // ARTICLE DETAIL PAGE
+    // =====================================================
+    async function viewArticle(id) {
+        const container = document.getElementById('articleDetail');
+        showPage('articlePage');
+        showLoading('articleDetail');
+
+        try {
+            // GET http://localhost:8080/api/articles/1
+            const article = await apiGet(`/articles/${id}`);
+            container.innerHTML = `
+                    <div class="article-card" style="cursor: default;">
+                        <h2 class="article-title" style="font-size: 2.5rem;">${article.title}</h2>
+                        <p class="article-date">Published on ${formatDate(article.date)}</p>
+                        <div class="article-content">${article.content}</div>
+                    </div>
+                `;
+        } catch (err) {
+            container.innerHTML = `<div class="error-banner">⚠️ Could not load article. ${err.message}</div>`;
+        }
+    }
+
+    // =====================================================
+    // DASHBOARD PAGE
+    // =====================================================
+    async function renderDashboard() {
+        const container = document.getElementById('dashboardArticles');
+        showLoading('dashboardArticles');
+
+        try {
+            // GET http://localhost:8080/api/articles  (all articles, including drafts)
+            const articles = await apiGet('/articles');
+
+            if (articles.length === 0) {
+                container.innerHTML = '<p style="color: #6b7280;">No articles yet. Click "Add New Article" to create one.</p>';
+                return;
+            }
+
+            container.innerHTML = articles.map(article => `
+                    <div class="dashboard-article">
+                        <div class="article-info">
+                            <h3>${article.title}</h3>
+                            <p class="article-date">${formatDate(article.date)} ${!article.published ? '· <em>Draft</em>' : ''}</p>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn btn-primary edit-btn" data-id="${article.id}">Edit</button>
+                            <button class="btn btn-danger delete-btn" data-id="${article.id}">Delete</button>
+                        </div>
+                    </div>
+                `).join('');
+
+            container.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', () => editArticle(parseInt(btn.dataset.id)));
+            });
+            container.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', () => deleteArticle(parseInt(btn.dataset.id)));
+            });
+        } catch (err) {
+            container.innerHTML = `<div class="error-banner">⚠️ Could not load dashboard. Make sure your Java server is running. ${err.message}</div>`;
+        }
+    }
+
+    // =====================================================
+    // EDIT ARTICLE
+    // =====================================================
+    async function editArticle(id) {
+        try {
+            // GET http://localhost:8080/api/articles/1
+            const article = await apiGet(`/articles/${id}`);
+            editingArticleId = id;
+            document.getElementById('editTitle').value = article.title;
+            document.getElementById('editDate').value = article.date;
+            document.getElementById('editContent').value = article.content;
+            showPage('editArticlePage');
+        } catch (err) {
+            showDashboardNotification(`Could not load article for editing: ${err.message}`, 'error');
+        }
+    }
+
+    // =====================================================
+    // DELETE ARTICLE
+    // =====================================================
+    async function deleteArticle(id) {
+        if (!confirm('Are you sure you want to delete this article?')) return;
+        try {
+            // DELETE http://localhost:8080/api/articles/1
+            await apiDelete(`/articles/${id}`);
+            showDashboardNotification('Article deleted successfully!');
+            renderDashboard();
+        } catch (err) {
+            showDashboardNotification(`Delete failed: ${err.message}`, 'error');
+        }
+    }
+
+    // =====================================================
+    // EVENT LISTENERS
+    // =====================================================
+    document.getElementById('siteTitle').addEventListener('click', () => {
+        if (!isAdmin) { showPage('homePage'); renderArticlesList(); }
+    });
+
+    document.getElementById('adminToggle').addEventListener('click', () => {
+        isAdmin = !isAdmin;
+        const btn = document.getElementById('adminToggle');
+        if (isAdmin) {
+            btn.textContent = 'Exit Admin';
+            showPage('dashboardPage');
+            renderDashboard();
+        } else {
+            btn.textContent = 'Admin';
+            showPage('homePage');
+            renderArticlesList();
+        }
+    });
+
+    document.getElementById('backToHome').addEventListener('click', (e) => {
+        e.preventDefault();
+        showPage('homePage');
+    });
+
+    document.getElementById('addNewArticle').addEventListener('click', () => {
+        document.getElementById('addDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('addArticleForm').reset();
+        document.getElementById('addDate').value = new Date().toISOString().split('T')[0];
+        showPage('addArticlePage');
+    });
+
+    document.getElementById('backToDashboardFromAdd').addEventListener('click', (e) => {
+        e.preventDefault();
+        showPage('dashboardPage');
+    });
+
+    document.getElementById('backToDashboardFromEdit').addEventListener('click', (e) => {
+        e.preventDefault();
+        showPage('dashboardPage');
+    });
+
+    document.getElementById('cancelAdd').addEventListener('click', () => showPage('dashboardPage'));
+    document.getElementById('cancelEdit').addEventListener('click', () => showPage('dashboardPage'));
+
+    // =====================================================
+    // FORM: Create Article
+    // =====================================================
+    document.getElementById('addArticleForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('addSubmitBtn');
+        btn.textContent = 'Publishing...';
+        btn.disabled = true;
+
+        const data = {
+            title: document.getElementById('addTitle').value,
+            content: document.getElementById('addContent').value,
+            date: document.getElementById('addDate').value,
+            published: true
+        };
+
+        try {
+            // POST http://localhost:8080/api/articles
+            await apiPost('/articles', data);
+            document.getElementById('addArticleForm').reset();
+            showPage('dashboardPage');
+            showDashboardNotification('✅ Article published successfully!');
+            renderDashboard();
+        } catch (err) {
+            alert(`Failed to create article: ${err.message}`);
+        } finally {
+            btn.textContent = 'Publish Article';
+            btn.disabled = false;
+        }
+    });
+
+    // =====================================================
+    // FORM: Update Article
+    // =====================================================
+    document.getElementById('editArticleForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('editSubmitBtn');
+        btn.textContent = 'Updating...';
+        btn.disabled = true;
+
+        const data = {
+            title: document.getElementById('editTitle').value,
+            content: document.getElementById('editContent').value,
+            date: document.getElementById('editDate').value,
+            published: true
+        };
+
+        try {
+            // PUT http://localhost:8080/api/articles/1
+            await apiPut(`/articles/${editingArticleId}`, data);
+            editingArticleId = null;
+            document.getElementById('editArticleForm').reset();
+            showPage('dashboardPage');
+            showDashboardNotification('✅ Article updated successfully!');
+            renderDashboard();
+        } catch (err) {
+            alert(`Failed to update article: ${err.message}`);
+        } finally {
+            btn.textContent = 'Update Article';
+            btn.disabled = false;
+        }
+    });
+
+    // =====================================================
+    // INITIAL RENDER
+    // =====================================================
+    renderArticlesList();
+</script>
+</body>
+</html>
