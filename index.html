@@ -434,7 +434,7 @@
         try {
             // 1. Send credentials to your new Java endpoint
             // The backend should return a success status (200 OK) if matched
-            const response = await fetch(`${API_BASE}/login`, {
+            const response = await fetch(`${API_BASE}/articles/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username: user, password: pass })
@@ -564,3 +564,4 @@
 </script>
 </body>
 </html>
+

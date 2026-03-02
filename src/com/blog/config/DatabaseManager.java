@@ -124,16 +124,6 @@ public class DatabaseManager {
                 )
                 """;
 
-            // try-with-resources: automatically closes connection + statement when done
-            try (Connection conn = getConnection();
-                 var stmt = conn.createStatement()) {
-
-                stmt.execute(createTableSQL);
-                System.out.println("✅ Database schema initialized (table 'articles' ready).");
-
-            } catch (SQLException e) {
-                throw new RuntimeException("Failed to initialize database schema", e);
-            }
             String createUserTableSQL = """
                 CREATE TABLE IF NOT EXISTS users (
                     id         BIGSERIAL PRIMARY KEY,
@@ -142,6 +132,18 @@ public class DatabaseManager {
                     created_at TIMESTAMP DEFAULT NOW()
                 )
                 """;
+
+            // try-with-resources: automatically closes connection + statement when done
+            try (Connection conn = getConnection();
+                 var stmt = conn.createStatement()) {
+
+                stmt.execute(createTableSQL);
+                stmt.execute(createUserTableSQL);  // BUG FIX: Actually execute the users table creation
+                System.out.println("✅ Database schema initialized (tables 'articles' and 'users' ready).");
+
+            } catch (SQLException e) {
+                throw new RuntimeException("Failed to initialize database schema", e);
+            }
         }
 
         /**
