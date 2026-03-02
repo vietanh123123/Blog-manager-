@@ -33,6 +33,7 @@
      *   GET    /api/articles            → get all articles (admin)
      *   GET    /api/articles/{id}       → get single article
      *   POST   /api/articles            → create article
+     *   POST   /api/articles/login      ->check login credentials with one in database and return status
      *   PUT    /api/articles/{id}       → update article
      *   DELETE /api/articles/{id}       → delete article
      *
@@ -149,6 +150,7 @@
                 // 6. Call the handler
                 try {
                     route.handler.accept(exchange, pathVars);
+                    //accept is the function in BiConsumer interface
                 } catch (Exception e) {
                     System.err.println("Handler error: " + e.getMessage());
                     e.printStackTrace();

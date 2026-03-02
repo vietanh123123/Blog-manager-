@@ -2,6 +2,7 @@ package com.blog.repository;
 
 import com.blog.config.DatabaseManager;
 import com.blog.model.Article;
+import com.blog.model.User;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -266,5 +267,27 @@ public class ArticleRepository {
             articles.add(mapRow(rs));
         }
         return articles;
+    }
+
+    public User arbitraryUser() {
+        String sql = """
+                SELECT username, password 
+                FROM users
+                ORDER BY RANDOM()
+                LIMIT 1
+                """;
+
+        try (Connection conn = db.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            if (rs.next()) {
+                return new User(rs.getString("username"), rs.getString("password"));
+            } else {
+                throw new RuntimeException("No users found in database");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error fetching user from database", e);
+        }
     }
 }

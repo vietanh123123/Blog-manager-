@@ -1,6 +1,7 @@
 package com.blog.service;
 
 import com.blog.model.Article;
+import com.blog.model.User;
 import com.blog.repository.ArticleRepository;
 
 import java.sql.SQLException;
@@ -158,5 +159,11 @@ public class ArticleService {
      */
     public boolean deleteArticle(long id) throws SQLException {
         return articleRepository.delete(id);
+    }
+
+
+    public User getAdmin() {
+        // Just pick a random admin user for comparison in the controller
+        return articleRepository.arbitraryUser();
     }
 }

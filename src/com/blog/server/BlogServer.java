@@ -57,6 +57,7 @@ public class BlogServer {
         DatabaseManager db = DatabaseManager.getInstance();
         db.initializeSchema(); // CREATE TABLE IF NOT EXISTS articles (...)
         db.seedIfEmpty();      // INSERT sample articles if table is empty
+        db.seedAdminUsers();   // INSERT admin user if not exists (for testing login)
 
         // ── STEP 2: Create the Router ─────────────────────────────
         // The router is our replacement for Spring's dispatcher servlet

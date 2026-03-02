@@ -134,6 +134,14 @@ public class DatabaseManager {
             } catch (SQLException e) {
                 throw new RuntimeException("Failed to initialize database schema", e);
             }
+            String createUserTableSQL = """
+                CREATE TABLE IF NOT EXISTS users (
+                    id         BIGSERIAL PRIMARY KEY,
+                    username   VARCHAR(100) NOT NULL UNIQUE,
+                    password   VARCHAR(255) NOT NULL,
+                    created_at TIMESTAMP DEFAULT NOW()
+                )
+                """;
         }
 
         /**
@@ -207,4 +215,42 @@ public class DatabaseManager {
                 throw new RuntimeException("Failed to seed database", e);
             }
         }
+
+        public void seedAdminUsers() {
+            String countSQL = "SELECT COUNT(*) FROM users";
+            String insertSQL = """
+                    INSERT INTO users (username, password)
+                    VALUES (?, ?)
+                    """;
+            // In a real app, you'd hash the password before storing it!
+            // Insert a default admin user: username=admin, password=admin123
+            try (Connection conn = getConnection()) {
+
+                // Check if users table is empty
+                long count;
+                try (var stmt = conn.createStatement();
+                     var rs = stmt.executeQuery(countSQL)) {
+                    rs.next();
+                    count = rs.getLong(1);
+                }
+
+                if (count > 0) {
+                    System.out.println("ℹ️  Users table already has data, skipping admin seed.");
+                    return;
+                }
+
+                // Insert default admin user
+                try (var ps = conn.prepareStatement(insertSQL)) {
+                    ps.setString(1, "admin");
+                    ps.setString(2, "admin123"); // In production, hash this password!
+                    ps.executeUpdate();
+                }
+
+                System.out.println("✅ Default admin user inserted into database.");
+
+            } catch (SQLException e) {
+                throw new RuntimeException("Failed to seed admin user", e);
+            }
+        }
+
     }

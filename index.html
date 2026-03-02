@@ -51,6 +51,16 @@
         .error-banner { background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; padding: 1rem 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
         .error-banner button { background: none; border: none; cursor: pointer; color: #991b1b; font-size: 1.2rem; }
         .success-banner { background: #d1fae5; border: 1px solid #6ee7b7; color: #065f46; padding: 1rem 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; }
+        /* Login Page Styles */
+        .login-container {
+            max-width: 400px;
+            margin: 4rem auto;
+            background: white;
+            border-radius: 12px;
+            padding: 2.5rem;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+
 
         @media (max-width: 768px) {
             h1 { font-size: 1.5rem; }
@@ -76,7 +86,7 @@
 
     <!-- Article Page -->
     <div id="articlePage" class="page hidden">
-        <a href="#" class="back-link" id="backToHome">← Back to Home</a>
+        <a href="#" class="back-link" id="backToHome">? Back to Home</a>
         <div id="articleDetail"></div>
     </div>
 
@@ -90,9 +100,31 @@
         <div id="dashboardArticles"></div>
     </div>
 
+    <div id="loginPage" class="page hidden">
+        <div class="login-container">
+            <h2 style="text-align: center; margin-bottom: 1.5rem; color: #1f2937;">Admin Login</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginUser">Username</label>
+                    <input type="text" id="loginUser" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPass">Password</label>
+                    <input type="password" id="loginPass" required>
+                </div>
+                <div class="form-actions" style="margin-top: 2rem;">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
+                </div>
+                <div style="text-align: center; margin-top: 1rem;">
+                    <a href="#" class="back-link" id="cancelLogin" style="margin-bottom: 0;">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Add Article Page -->
     <div id="addArticlePage" class="page hidden">
-        <a href="#" class="back-link" id="backToDashboardFromAdd">← Back to Dashboard</a>
+        <a href="#" class="back-link" id="backToDashboardFromAdd">? Back to Dashboard</a>
         <div class="form-container">
             <h2 style="margin-bottom: 1.5rem; color: #1f2937;">Add New Article</h2>
             <form id="addArticleForm">
@@ -118,7 +150,7 @@
 
     <!-- Edit Article Page -->
     <div id="editArticlePage" class="page hidden">
-        <a href="#" class="back-link" id="backToDashboardFromEdit">← Back to Dashboard</a>
+        <a href="#" class="back-link" id="backToDashboardFromEdit">? Back to Dashboard</a>
         <div class="form-container">
             <h2 style="margin-bottom: 1.5rem; color: #1f2937;">Edit Article</h2>
             <form id="editArticleForm">
@@ -175,7 +207,7 @@
         const response = await fetch(`${API_BASE}${path}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }, // tell backend we're sending JSON
-            body: JSON.stringify(data)                         // convert JS object → JSON string
+            body: JSON.stringify(data)                         // convert JS object ? JSON string
         });
         if (!response.ok) throw new Error(`POST ${path} failed: ${response.status}`);
         return response.json();
@@ -252,7 +284,7 @@
                         <h3 class="article-title">${article.title}</h3>
                         <p class="article-date">Published on ${formatDate(article.date)}</p>
                         <p class="article-preview">${article.content.substring(0, 200)}...</p>
-                        <a href="#" class="read-more">Read more →</a>
+                        <a href="#" class="read-more">Read more ?</a>
                     </div>
                 `).join('');
 
@@ -265,7 +297,7 @@
         } catch (err) {
             container.innerHTML = `
                     <div class="error-banner">
-                        ⚠️ Could not connect to the backend. Make sure your Java server is running at http://localhost:8080
+                        ?? Could not connect to the backend. Make sure your Java server is running at http://localhost:8080
                         <span style="font-size:0.85rem;display:block;margin-top:4px">Error: ${err.message}</span>
                     </div>`;
         }
@@ -290,7 +322,7 @@
                     </div>
                 `;
         } catch (err) {
-            container.innerHTML = `<div class="error-banner">⚠️ Could not load article. ${err.message}</div>`;
+            container.innerHTML = `<div class="error-banner">?? Could not load article. ${err.message}</div>`;
         }
     }
 
@@ -314,7 +346,7 @@
                     <div class="dashboard-article">
                         <div class="article-info">
                             <h3>${article.title}</h3>
-                            <p class="article-date">${formatDate(article.date)} ${!article.published ? '· <em>Draft</em>' : ''}</p>
+                            <p class="article-date">${formatDate(article.date)} ${!article.published ? '� <em>Draft</em>' : ''}</p>
                         </div>
                         <div class="action-buttons">
                             <button class="btn btn-primary edit-btn" data-id="${article.id}">Edit</button>
@@ -330,7 +362,7 @@
                 btn.addEventListener('click', () => deleteArticle(parseInt(btn.dataset.id)));
             });
         } catch (err) {
-            container.innerHTML = `<div class="error-banner">⚠️ Could not load dashboard. Make sure your Java server is running. ${err.message}</div>`;
+            container.innerHTML = `<div class="error-banner">?? Could not load dashboard. Make sure your Java server is running. ${err.message}</div>`;
         }
     }
 
@@ -373,18 +405,68 @@
         if (!isAdmin) { showPage('homePage'); renderArticlesList(); }
     });
 
+    // Toggle Admin / Login flow
     document.getElementById('adminToggle').addEventListener('click', () => {
-        isAdmin = !isAdmin;
         const btn = document.getElementById('adminToggle');
-        if (isAdmin) {
-            btn.textContent = 'Exit Admin';
-            showPage('dashboardPage');
-            renderDashboard();
+        if (!isAdmin) {
+            // If not logged in, show the login page
+            showPage('loginPage');
         } else {
+            // If already logged in, log out and go home
+            isAdmin = false;
             btn.textContent = 'Admin';
             showPage('homePage');
             renderArticlesList();
         }
+    });
+
+    // Handle Login Form Submission (UPDATED for Backend)
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const loginBtn = e.target.querySelector('button[type="submit"]');
+        const user = document.getElementById('loginUser').value;
+        const pass = document.getElementById('loginPass').value;
+
+        loginBtn.textContent = 'Authenticating...';
+        loginBtn.disabled = true;
+
+        try {
+            // 1. Send credentials to your new Java endpoint
+            // The backend should return a success status (200 OK) if matched
+            const response = await fetch(`${API_BASE}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: user, password: pass })
+            });
+
+            if (response.ok) {
+                // 2. SUCCESS: Transition to Admin mode
+                isAdmin = true;
+                document.getElementById('adminToggle').textContent = 'Exit Admin';
+                document.getElementById('loginForm').reset();
+
+                showPage('dashboardPage');
+                showDashboardNotification('Successfully logged in!', 'success');
+                renderDashboard();
+            } else {
+                // 3. FAILURE: Wrong credentials
+                alert('Invalid username or password.');
+            }
+        } catch (err) {
+            // 4. ERROR: Server is down or network issue
+            alert('Could not connect to authentication server: ' + err.message);
+        } finally {
+            loginBtn.textContent = 'Login';
+            loginBtn.disabled = false;
+        }
+    });
+
+    // Handle Login Cancel
+    document.getElementById('cancelLogin').addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('loginForm').reset();
+        showPage('homePage');
     });
 
     document.getElementById('backToHome').addEventListener('click', (e) => {
@@ -433,7 +515,7 @@
             await apiPost('/articles', data);
             document.getElementById('addArticleForm').reset();
             showPage('dashboardPage');
-            showDashboardNotification('✅ Article published successfully!');
+            showDashboardNotification('? Article published successfully!');
             renderDashboard();
         } catch (err) {
             alert(`Failed to create article: ${err.message}`);
@@ -465,7 +547,7 @@
             editingArticleId = null;
             document.getElementById('editArticleForm').reset();
             showPage('dashboardPage');
-            showDashboardNotification('✅ Article updated successfully!');
+            showDashboardNotification('? Article updated successfully!');
             renderDashboard();
         } catch (err) {
             alert(`Failed to update article: ${err.message}`);

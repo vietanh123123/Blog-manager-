@@ -1,6 +1,7 @@
     package com.blog.controller;
 
     import com.blog.model.Article;
+    import com.blog.model.User;
     import com.blog.server.Router;
     import com.blog.service.ArticleService;
     import com.blog.util.JsonUtil;
@@ -50,6 +51,7 @@
             router.get("/api/articles",           this::getAllArticles);
             router.get("/api/articles/{id}",      this::getArticleById);
             router.post("/api/articles",          this::createArticle);
+            router.post("/api/articles/login",     this::checkLogin); // TODO: implement this handler
             router.put("/api/articles/{id}",      this::updateArticle);
             router.delete("/api/articles/{id}",   this::deleteArticle);
         }
@@ -153,6 +155,28 @@
             }
         }
 
+        public void checkLogin(HttpExchange exchange, Map<String, String> pathVars) {
+                try {
+                    String body = readRequestBody(exchange);
+                    Map<String, String> fields = JsonUtil.parseJsonBody(body);
+
+                    String username = fields.get("username");
+                    String password = fields.get("password");
+
+                    User user = articleService.getAdmin();
+                    if (user.getUsername().equals(username) && user.getPassword().equals(password)) {
+                        sendResponse(exchange, 200, "{\"message\": \"Login successful\"}");
+                    } else {
+                        Router.sendError(exchange, 401, "Invalid username or password");
+                    }
+                } catch (IllegalArgumentException e) {
+                    Router.sendError(exchange, 400, e.getMessage());
+                }
+                    catch (Exception e) {
+                        Router.sendError(exchange, 500, "Failed to check login: " + e.getMessage());
+                    }
+        }
+
         /**
          * PUT /api/articles/{id}
          * Updates an existing article.
@@ -206,6 +230,8 @@
                 Router.sendError(exchange, 500, "Failed to delete article: " + e.getMessage());
             }
         }
+
+
 
         // ============================================================
         // PRIVATE UTILITY METHODS
