@@ -1,5 +1,6 @@
     package com.blog.server;
 
+    import com.blog.util.JwtUtil;
     import com.sun.net.httpserver.HttpExchange;
     import com.sun.net.httpserver.HttpHandler;
 
@@ -151,6 +152,8 @@
                 try {
                     route.handler.accept(exchange, pathVars);
                     //accept is the function in BiConsumer interface
+                    //accept() is the method that executes the stored function
+                    // it will call the original method we registered
                 } catch (Exception e) {
                     System.err.println("Handler error: " + e.getMessage());
                     e.printStackTrace();
@@ -174,9 +177,10 @@
          */
         private void addCorsHeaders(HttpExchange exchange) {
             var headers = exchange.getResponseHeaders();
-            headers.set("Access-Control-Allow-Origin", "*");
+            headers.set("Access-Control-Allow-Origin", "http://127.0.0.1:5500"); //  frontend origin
             headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
             headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+            headers.set("Access-Control-Allow-Credentials", "true"); // ← add this to allow cookies
             headers.set("Content-Type", "application/json");
         }
 
@@ -193,6 +197,48 @@
                 exchange.close();
             } catch (IOException e) {
                 System.err.println("Failed to send error response: " + e.getMessage());
+            }
+        }
+
+        /**
+         * Send a JSON response with custom message.
+         */
+        private static void sendResponse(HttpExchange exchange, int statusCode, String json) throws IOException {
+            byte[] bytes = json.getBytes();
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(statusCode, bytes.length);
+            exchange.getResponseBody().write(bytes);
+            exchange.close();
+        }
+
+    /**
+     * AUTHENTICATION MIDDLEWARE
+     *
+     * Verifies JWT token from Authorization header.
+     * If valid, attaches userId to exchange attributes for handler access.
+     * If invalid/missing, sends 401 response and returns false.
+     *
+     * Usage in handlers:
+     *   if (!requireAuth(exchange)) return;
+     *   String userId = (String) exchange.getAttribute("userId");
+     */
+    public static boolean requireAuth(HttpExchange exchange) throws IOException {
+            String authHeader = exchange.getRequestHeaders().getFirst("Authorization");
+
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                sendResponse(exchange, 401, "{\"error\":\"Missing token\"}");
+                return false;
+            }
+
+            try {
+                String token = authHeader.substring(7); // strip "Bearer "
+                Map<String, String> claims = JwtUtil.verifyToken(token);
+                // Attach userId to exchange so handlers can read it
+                exchange.setAttribute("userId", claims.get("userId"));
+                return true;
+            } catch (Exception e) {
+                sendResponse(exchange, 401, "{\"error\":\"Invalid or expired token\"}");
+                return false;
             }
         }
     }

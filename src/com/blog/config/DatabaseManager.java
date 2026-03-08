@@ -119,6 +119,7 @@ public class DatabaseManager {
                     content    TEXT NOT NULL,
                     date       DATE NOT NULL,
                     published  BOOLEAN NOT NULL DEFAULT TRUE,
+                    userId     BIGINT, 
                     created_at TIMESTAMP DEFAULT NOW(),
                     updated_at TIMESTAMP DEFAULT NOW()
                 )

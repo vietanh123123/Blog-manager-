@@ -23,6 +23,8 @@ SRC_DIR="src"
 OUT_DIR="out"
 LIB_DIR="lib"
 PG_JAR="$LIB_DIR/postgresql-42.7.3.jar"
+BCRYPT_JAR="$LIB_DIR/bcrypt-0.10.2.jar"
+BYTES_JAR="$LIB_DIR/bytes-1.6.1.jar"
 
 # ── Check Prerequisites ────────────────────────────────────────
 echo "🔍 Checking prerequisites..."
@@ -58,6 +60,32 @@ if [ ! -f "$PG_JAR" ]; then
     exit 1
 fi
 
+# ── Check BCrypt Library ───────────────────────────────────────
+if [ ! -f "$BCRYPT_JAR" ]; then
+    echo ""
+    echo "❌ BCrypt library not found at: $BCRYPT_JAR"
+    echo ""
+    echo "   Download it with:"
+    echo "   curl -L -o $BCRYPT_JAR https://repo1.maven.org/maven2/at/favre/lib/bcrypt/0.10.2/bcrypt-0.10.2.jar"
+    echo ""
+    echo "   Or manually place bcrypt-0.10.2.jar in lib/"
+    echo ""
+    exit 1
+fi
+
+# ── Check Bytes Library (required by BCrypt) ───────────────────
+if [ ! -f "$BYTES_JAR" ]; then
+    echo ""
+    echo "❌ Bytes library not found at: $BYTES_JAR"
+    echo ""
+    echo "   This library is required by BCrypt. Download it with:"
+    echo "   curl -L -o $BYTES_JAR https://repo1.maven.org/maven2/at/favre/lib/bytes/1.6.1/bytes-1.6.1.jar"
+    echo ""
+    echo "   Or manually place bytes-1.6.1.jar in lib/"
+    echo ""
+    exit 1
+fi
+
 # ── Compile ────────────────────────────────────────────────────
 echo "🔨 Compiling Java source files..."
 
@@ -65,10 +93,11 @@ echo "🔨 Compiling Java source files..."
 mkdir -p "$OUT_DIR"
 
 # Find all .java files and compile them
-# -cp lib/postgresql-*.jar  = put the PG driver on the classpath so imports resolve
+# -cp lib/postgresql-*.jar:lib/bcrypt-*.jar:lib/bytes-*.jar  = put the PG driver, BCrypt and Bytes on the classpath
 # -d out                    = put .class files in the out/ directory
 # $(find src -name "*.java") = compile every .java file we find
-javac -cp "$PG_JAR" -d "$OUT_DIR" $(find "$SRC_DIR" -name "*.java")
+javac -cp "$PG_JAR:$BCRYPT_JAR:$BYTES_JAR" -d "$OUT_DIR" $(find "$SRC_DIR" -name "*.java")
+
 
 echo "   ✅ Compilation successful."
 
@@ -83,7 +112,7 @@ echo ""
 echo "🚀 Starting server..."
 echo ""
 
-# java -cp out:lib/postgresql-*.jar com.blog.server.BlogServer
-#   -cp = classpath: our compiled classes (out/) + the PG driver jar
+# java -cp out:lib/postgresql-*.jar:lib/bcrypt-*.jar:lib/bytes-*.jar com.blog.server.BlogServer
+#   -cp = classpath: our compiled classes (out/) + the PG driver jar + BCrypt jar + Bytes jar
 #   ':' separator = Linux/Mac (Windows uses ';' instead)
-java -cp "$OUT_DIR:$PG_JAR" "$MAIN_CLASS"
+java -cp "$OUT_DIR:$PG_JAR:$BCRYPT_JAR:$BYTES_JAR" "$MAIN_CLASS"

@@ -3,6 +3,7 @@ package com.blog.server;
 import com.blog.config.DatabaseManager;
 import com.blog.controller.ArticleController;
 import com.sun.net.httpserver.HttpServer;
+import com.blog.controller.AuthController;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -70,11 +71,16 @@ public class BlogServer {
         ArticleController articleController = new ArticleController();
         articleController.registerRoutes(router);
 
+        AuthController authController = new AuthController();
+        authController.registerRoutes(router);
+
         System.out.println("\n🗺️  Routes registered:");
         System.out.println("   GET    /api/articles/published");
         System.out.println("   GET    /api/articles");
         System.out.println("   GET    /api/articles/{id}");
         System.out.println("   POST   /api/articles");
+        System.out.println("   POST   /api/auth/register");
+        System.out.println("   POST   /api/auth/login");
         System.out.println("   PUT    /api/articles/{id}");
         System.out.println("   DELETE /api/articles/{id}");
 

@@ -111,6 +111,25 @@ public class ArticleRepository {
         }
     }
 
+    /**
+     * GET ALL ARTICLES FOR A SPECIFIC USER
+     *
+     * SQL: SELECT * FROM articles WHERE user_id = ? ORDER BY date DESC
+     */
+    public List<Article> findByUserId(long userId) throws SQLException {
+        String sql = "SELECT * FROM articles WHERE user_id = ? ORDER BY date DESC";
+
+        try (Connection conn = db.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setLong(1, userId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                return mapResultSetToList(rs);
+            }
+        }
+    }
+
     // ============================================================
     // WRITE OPERATIONS
     // ============================================================

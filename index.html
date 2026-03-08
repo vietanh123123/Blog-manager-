@@ -3,565 +3,980 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Personal Blog</title>
+    <title>Quill — Blog Manager</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; background-color: #f5f5f5; line-height: 1.6; }
-        header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem 1rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .header-content { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
-        h1 { font-size: 2rem; cursor: pointer; }
-        .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.3s; text-decoration: none; display: inline-block; }
-        .btn-primary { background: white; color: #667eea; }
-        .btn-primary:hover { background: #f0f0f0; }
-        .btn-success { background: #10b981; color: white; }
-        .btn-success:hover { background: #059669; }
-        .btn-danger { background: #ef4444; color: white; }
-        .btn-danger:hover { background: #dc2626; }
-        .btn-secondary { background: #6b7280; color: white; }
-        .btn-secondary:hover { background: #4b5563; }
-        .container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
-        .article-card { background: white; border-radius: 12px; padding: 2rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: transform 0.3s, box-shadow 0.3s; cursor: pointer; border: 1px solid #e5e7eb; }
-        .article-card:hover { transform: translateY(-4px); box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
-        .article-title { font-size: 1.75rem; color: #1f2937; margin-bottom: 0.5rem; }
-        .article-date { color: #6b7280; font-size: 0.875rem; margin-bottom: 1rem; }
-        .article-preview { color: #4b5563; margin-bottom: 1rem; }
-        .article-content { color: #374151; white-space: pre-wrap; line-height: 1.8; margin-bottom: 1.5rem; }
-        .read-more { color: #667eea; font-weight: 600; text-decoration: none; }
-        .read-more:hover { color: #764ba2; }
-        .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
-        .dashboard-header h2 { font-size: 2.5rem; color: #1f2937; }
-        .dashboard-article { background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
-        .article-info h3 { font-size: 1.5rem; color: #1f2937; margin-bottom: 0.25rem; }
-        .action-buttons { display: flex; gap: 0.5rem; }
-        .form-container { background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .form-group { margin-bottom: 1.5rem; }
-        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: #374151; }
-        .form-group input, .form-group textarea { width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 1rem; font-family: inherit; }
-        .form-group textarea { min-height: 300px; resize: vertical; }
-        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
-        .form-actions { display: flex; gap: 1rem; }
-        .back-link { display: inline-block; color: #667eea; text-decoration: none; margin-bottom: 1.5rem; font-weight: 600; }
-        .back-link:hover { color: #764ba2; }
-        .hidden { display: none; }
-
-        /* Loading & error states */
-        .loading { text-align: center; padding: 3rem; color: #6b7280; font-size: 1.1rem; }
-        .loading::after { content: ''; display: inline-block; width: 20px; height: 20px; border: 3px solid #e5e7eb; border-top-color: #667eea; border-radius: 50%; animation: spin 0.8s linear infinite; margin-left: 10px; vertical-align: middle; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .error-banner { background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; padding: 1rem 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
-        .error-banner button { background: none; border: none; cursor: pointer; color: #991b1b; font-size: 1.2rem; }
-        .success-banner { background: #d1fae5; border: 1px solid #6ee7b7; color: #065f46; padding: 1rem 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; }
-        /* Login Page Styles */
-        .login-container {
-            max-width: 400px;
-            margin: 4rem auto;
-            background: white;
-            border-radius: 12px;
-            padding: 2.5rem;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        :root {
+            --ink: #0f0e0c;
+            --paper: #faf8f4;
+            --cream: #f0ece3;
+            --rust: #c0533a;
+            --rust-light: #e8c4bc;
+            --sage: #4a6741;
+            --muted: #8a8680;
+            --border: #ddd9d0;
+            --shadow: 0 2px 12px rgba(15,14,12,0.08);
+            --shadow-lg: 0 8px 32px rgba(15,14,12,0.14);
         }
 
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        @media (max-width: 768px) {
-            h1 { font-size: 1.5rem; }
-            .dashboard-header h2 { font-size: 2rem; }
-            .article-title { font-size: 1.5rem; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--paper);
+            color: var(--ink);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* ── NOISE TEXTURE OVERLAY ── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0.4;
+        }
+
+        /* ── HEADER ── */
+        header {
+            background: var(--ink);
+            color: var(--paper);
+            padding: 0 2rem;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            letter-spacing: -0.02em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .logo span { color: var(--rust-light); font-style: italic; }
+
+        .header-actions { display: flex; gap: 0.75rem; align-items: center; }
+
+        /* ── BUTTONS ── */
+        .btn {
+            padding: 0.5rem 1.25rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.18s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            text-decoration: none;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: rgba(250,248,244,0.7);
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+        .btn-ghost:hover { background: rgba(255,255,255,0.08); color: var(--paper); }
+
+        .btn-primary {
+            background: var(--rust);
+            color: white;
+        }
+        .btn-primary:hover { background: #a84530; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(192,83,58,0.35); }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--ink);
+            border: 1.5px solid var(--border);
+        }
+        .btn-outline:hover { border-color: var(--ink); background: var(--cream); }
+
+        .btn-danger {
+            background: transparent;
+            color: #b91c1c;
+            border: 1.5px solid #fca5a5;
+            font-size: 0.8rem;
+            padding: 0.4rem 0.9rem;
+        }
+        .btn-danger:hover { background: #fee2e2; }
+
+        .btn-edit {
+            background: var(--cream);
+            color: var(--ink);
+            border: 1.5px solid var(--border);
+            font-size: 0.8rem;
+            padding: 0.4rem 0.9rem;
+        }
+        .btn-edit:hover { background: var(--border); }
+
+        .btn-success {
+            background: var(--sage);
+            color: white;
+        }
+        .btn-success:hover { background: #3a5332; transform: translateY(-1px); }
+
+        .btn-lg {
+            padding: 0.8rem 2rem;
+            font-size: 1rem;
+        }
+
+        .btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none !important; }
+
+        /* ── CONTAINER ── */
+        .container { max-width: 860px; margin: 0 auto; padding: 0 1.5rem; }
+        .page { padding: 3rem 0; }
+        .hidden { display: none !important; }
+
+        /* ── WELCOME PAGE ── */
+        #welcomePage .hero {
+            text-align: center;
+            padding: 5rem 1rem 4rem;
+        }
+
+        .hero-eyebrow {
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--rust);
+            margin-bottom: 1.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .hero-eyebrow::before,
+        .hero-eyebrow::after {
+            content: '';
+            width: 2rem;
+            height: 1px;
+            background: var(--rust);
+            display: inline-block;
+        }
+
+        .hero h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.8rem, 6vw, 4.5rem);
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+            color: var(--ink);
+            margin-bottom: 1.5rem;
+        }
+
+        .hero h2 em { font-style: italic; color: var(--rust); }
+
+        .hero p {
+            font-size: 1.15rem;
+            color: var(--muted);
+            max-width: 480px;
+            margin: 0 auto 3rem;
+            font-weight: 300;
+        }
+
+        .hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+        .divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 3rem 0;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.5rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .feature-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+
+        .feature-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-card h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .feature-card p {
+            font-size: 0.875rem;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        /* ── AUTH PAGES ── */
+        .auth-wrapper {
+            min-height: calc(100vh - 64px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        .auth-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .auth-card h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.75rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .auth-card .subtitle {
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group { margin-bottom: 1.25rem; }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 0.4rem;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.95rem;
+            background: var(--paper);
+            color: var(--ink);
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        .form-group textarea { min-height: 280px; resize: vertical; line-height: 1.7; }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--rust);
+            box-shadow: 0 0 0 3px rgba(192,83,58,0.12);
+        }
+
+        .auth-switch {
+            text-align: center;
+            margin-top: 1.25rem;
+            font-size: 0.875rem;
+            color: var(--muted);
+        }
+
+        .auth-switch a {
+            color: var(--rust);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .auth-switch a:hover { text-decoration: underline; }
+
+        /* ── DASHBOARD ── */
+        .dash-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 2.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .dash-header h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.25rem;
+            line-height: 1;
+        }
+
+        .dash-header .welcome-name {
+            font-style: italic;
+            color: var(--rust);
+        }
+
+        .dash-header small {
+            display: block;
+            color: var(--muted);
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            font-weight: 300;
+        }
+
+        .article-row {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            transition: box-shadow 0.2s;
+        }
+
+        .article-row:hover { box-shadow: var(--shadow); }
+
+        .article-row-info h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .article-row-info .meta {
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        .article-row-actions { display: flex; gap: 0.5rem; }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--muted);
+        }
+
+        .empty-state .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .empty-state p { margin-bottom: 1.5rem; font-size: 1rem; }
+
+        /* ── ARTICLE FORM ── */
+        .form-page-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .form-page-header h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.75rem;
+        }
+
+        .form-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .form-actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; }
+
+        /* ── NOTIFICATIONS ── */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 0.875rem 1.5rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: var(--shadow-lg);
+            z-index: 999;
+            transform: translateY(0);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toast.success { background: var(--sage); color: white; }
+        .toast.error { background: #b91c1c; color: white; }
+        .toast.hidden { transform: translateY(120%); opacity: 0; }
+
+        /* ── ERROR BANNER ── */
+        .error-inline {
+            background: #fee2e2;
+            border: 1px solid #fca5a5;
+            color: #991b1b;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── FADE IN ── */
+        .page:not(.hidden) {
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── BACK LINK ── */
+        .back-link {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            transition: color 0.15s;
+        }
+        .back-link:hover { color: var(--ink); }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 640px) {
+            .features { grid-template-columns: 1fr; }
+            .auth-card { padding: 1.75rem; }
         }
     </style>
 </head>
 <body>
+
 <header>
-    <div class="header-content">
-        <h1 id="siteTitle">My Personal Blog</h1>
-        <button class="btn btn-primary" id="adminToggle">Admin</button>
+    <div class="logo" id="logoBtn">Quill <span>&</span> Ink</div>
+    <div class="header-actions" id="headerActions">
+        <button class="btn btn-ghost" id="headerLoginBtn">Log in</button>
+        <button class="btn btn-primary" id="headerRegisterBtn">Get started</button>
     </div>
 </header>
 
-<div class="container">
-    <!-- Home Page -->
-    <div id="homePage" class="page">
-        <h2 style="font-size: 2.5rem; color: #1f2937; margin-bottom: 2rem;">Latest Articles</h2>
-        <div id="articlesList"></div>
-    </div>
+<!-- Toast Notification -->
+<div class="toast hidden" id="toast"></div>
 
-    <!-- Article Page -->
-    <div id="articlePage" class="page hidden">
-        <a href="#" class="back-link" id="backToHome">? Back to Home</a>
-        <div id="articleDetail"></div>
-    </div>
-
-    <!-- Dashboard Page -->
-    <div id="dashboardPage" class="page hidden">
-        <div class="dashboard-header">
-            <h2>Dashboard</h2>
-            <button class="btn btn-success" id="addNewArticle">+ Add New Article</button>
+<!-- ═══════════════════════════════════════════ -->
+<!-- WELCOME PAGE                               -->
+<!-- ═══════════════════════════════════════════ -->
+<div id="welcomePage">
+    <div class="container">
+        <div class="hero">
+            <div class="hero-eyebrow">Your personal publishing space</div>
+            <h2>Write. Manage.<br><em>Share your stories.</em></h2>
+            <p>A calm, focused home for your blog. Create articles, manage your content, and share your voice with the world.</p>
+            <div class="hero-actions">
+                <button class="btn btn-primary btn-lg" id="heroRegisterBtn">Create free account</button>
+                <button class="btn btn-outline btn-lg" id="heroLoginBtn">Sign in</button>
+            </div>
         </div>
-        <div id="dashboardNotification"></div>
+
+        <hr class="divider">
+
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">✍️</div>
+                <h3>Write freely</h3>
+                <p>A clean editor that gets out of your way so you can focus on your words.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📂</div>
+                <h3>Your own space</h3>
+                <p>Each account is private. Your articles belong to you and only you.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Instant publishing</h3>
+                <p>Publish, edit, or delete articles in seconds from your dashboard.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- LOGIN PAGE                                 -->
+<!-- ═══════════════════════════════════════════ -->
+<div id="loginPage" class="hidden">
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <h2>Welcome back</h2>
+            <p class="subtitle">Sign in to manage your articles.</p>
+            <div id="loginError"></div>
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="loginUser" placeholder="your username" autocomplete="username">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
+            </div>
+            <button class="btn btn-primary" style="width:100%;justify-content:center;padding:0.75rem;" id="loginSubmitBtn">Sign in</button>
+            <div class="auth-switch">
+                No account? <a href="#" id="switchToRegister">Create one →</a>
+            </div>
+            <div class="auth-switch" style="margin-top:0.5rem;">
+                <a href="#" id="cancelLoginBtn">← Back to home</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- REGISTER PAGE                              -->
+<!-- ═══════════════════════════════════════════ -->
+<div id="registerPage" class="hidden">
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <h2>Create account</h2>
+            <p class="subtitle">Join and start writing today.</p>
+            <div id="registerError"></div>
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="regUser" placeholder="choose a username" autocomplete="username">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="regPass" placeholder="••••••••" autocomplete="new-password">
+            </div>
+            <button class="btn btn-primary" style="width:100%;justify-content:center;padding:0.75rem;" id="registerSubmitBtn">Create account</button>
+            <div class="auth-switch">
+                Already have an account? <a href="#" id="switchToLogin">Sign in →</a>
+            </div>
+            <div class="auth-switch" style="margin-top:0.5rem;">
+                <a href="#" id="cancelRegisterBtn">← Back to home</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- DASHBOARD PAGE                             -->
+<!-- ═══════════════════════════════════════════ -->
+<div id="dashboardPage" class="hidden">
+    <div class="container page">
+        <div class="dash-header">
+            <div>
+                <h2>Hello, <span class="welcome-name" id="dashUsername"></span></h2>
+                <small>Here are all your articles</small>
+            </div>
+            <button class="btn btn-primary" id="newArticleBtn">+ New article</button>
+        </div>
         <div id="dashboardArticles"></div>
     </div>
+</div>
 
-    <div id="loginPage" class="page hidden">
-        <div class="login-container">
-            <h2 style="text-align: center; margin-bottom: 1.5rem; color: #1f2937;">Admin Login</h2>
-            <form id="loginForm">
-                <div class="form-group">
-                    <label for="loginUser">Username</label>
-                    <input type="text" id="loginUser" required>
-                </div>
-                <div class="form-group">
-                    <label for="loginPass">Password</label>
-                    <input type="password" id="loginPass" required>
-                </div>
-                <div class="form-actions" style="margin-top: 2rem;">
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
-                </div>
-                <div style="text-align: center; margin-top: 1rem;">
-                    <a href="#" class="back-link" id="cancelLogin" style="margin-bottom: 0;">Cancel</a>
-                </div>
-            </form>
+<!-- ═══════════════════════════════════════════ -->
+<!-- ADD ARTICLE PAGE                           -->
+<!-- ═══════════════════════════════════════════ -->
+<div id="addArticlePage" class="hidden">
+    <div class="container page">
+        <div class="form-page-header">
+            <a href="#" class="back-link" id="backFromAdd">← Dashboard</a>
+            <h2>New article</h2>
+        </div>
+        <div class="form-card">
+            <div class="form-group">
+                <label>Title</label>
+                <input type="text" id="addTitle" placeholder="Your article title…">
+            </div>
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" id="addDate">
+            </div>
+            <div class="form-group">
+                <label>Content</label>
+                <textarea id="addContent" placeholder="Write your article here…"></textarea>
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-success" id="addSubmitBtn">Publish article</button>
+                <button class="btn btn-outline" id="cancelAddBtn">Cancel</button>
+            </div>
         </div>
     </div>
+</div>
 
-    <!-- Add Article Page -->
-    <div id="addArticlePage" class="page hidden">
-        <a href="#" class="back-link" id="backToDashboardFromAdd">? Back to Dashboard</a>
-        <div class="form-container">
-            <h2 style="margin-bottom: 1.5rem; color: #1f2937;">Add New Article</h2>
-            <form id="addArticleForm">
-                <div class="form-group">
-                    <label for="addTitle">Title</label>
-                    <input type="text" id="addTitle" required>
-                </div>
-                <div class="form-group">
-                    <label for="addDate">Publication Date</label>
-                    <input type="date" id="addDate" required>
-                </div>
-                <div class="form-group">
-                    <label for="addContent">Content</label>
-                    <textarea id="addContent" required></textarea>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-success" id="addSubmitBtn">Publish Article</button>
-                    <button type="button" class="btn btn-secondary" id="cancelAdd">Cancel</button>
-                </div>
-            </form>
+<!-- ═══════════════════════════════════════════ -->
+<!-- EDIT ARTICLE PAGE                          -->
+<!-- ═══════════════════════════════════════════ -->
+<div id="editArticlePage" class="hidden">
+    <div class="container page">
+        <div class="form-page-header">
+            <a href="#" class="back-link" id="backFromEdit">← Dashboard</a>
+            <h2>Edit article</h2>
         </div>
-    </div>
-
-    <!-- Edit Article Page -->
-    <div id="editArticlePage" class="page hidden">
-        <a href="#" class="back-link" id="backToDashboardFromEdit">? Back to Dashboard</a>
-        <div class="form-container">
-            <h2 style="margin-bottom: 1.5rem; color: #1f2937;">Edit Article</h2>
-            <form id="editArticleForm">
-                <div class="form-group">
-                    <label for="editTitle">Title</label>
-                    <input type="text" id="editTitle" required>
-                </div>
-                <div class="form-group">
-                    <label for="editDate">Publication Date</label>
-                    <input type="date" id="editDate" required>
-                </div>
-                <div class="form-group">
-                    <label for="editContent">Content</label>
-                    <textarea id="editContent" required></textarea>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-success" id="editSubmitBtn">Update Article</button>
-                    <button type="button" class="btn btn-secondary" id="cancelEdit">Cancel</button>
-                </div>
-            </form>
+        <div class="form-card">
+            <div class="form-group">
+                <label>Title</label>
+                <input type="text" id="editTitle" placeholder="Article title…">
+            </div>
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" id="editDate">
+            </div>
+            <div class="form-group">
+                <label>Content</label>
+                <textarea id="editContent" placeholder="Article content…"></textarea>
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-success" id="editSubmitBtn">Save changes</button>
+                <button class="btn btn-outline" id="cancelEditBtn">Cancel</button>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    // =====================================================
-    // API CONFIGURATION
-    // =====================================================
-    // This is the base URL of your Java backend.
-    // All fetch() calls will be made to this URL.
-    const API_BASE = 'http://localhost:8080/api';
+    // ─── CONFIG ──────────────────────────────────────────────
+    const API = 'http://localhost:8080/api';
 
-    // =====================================================
-    // API HELPER FUNCTIONS
-    // =====================================================
-    // These functions use the browser's built-in `fetch()` API
-    // to make HTTP requests to your Java backend.
+    // ─── STATE ───────────────────────────────────────────────
+    let currentUser = null;   // username string when logged in
+    let editingId = null;
 
-    /**
-     * GET request: fetch data from the backend.
-     * fetch(url) defaults to GET method.
-     */
-    async function apiGet(path) {
-        const response = await fetch(`${API_BASE}${path}`);
-        if (!response.ok) throw new Error(`GET ${path} failed: ${response.status}`);
-        return response.json(); // parse the JSON response body
+    // ─── HELPERS ─────────────────────────────────────────────
+    function showPage(id) {
+        ['welcomePage','loginPage','registerPage','dashboardPage','addArticlePage','editArticlePage']
+            .forEach(p => document.getElementById(p).classList.add('hidden'));
+        document.getElementById(id).classList.remove('hidden');
     }
 
-    /**
-     * POST request: send new data to the backend to create a record.
-     * We send JSON in the request body.
-     */
-    async function apiPost(path, data) {
-        const response = await fetch(`${API_BASE}${path}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }, // tell backend we're sending JSON
-            body: JSON.stringify(data)                         // convert JS object ? JSON string
-        });
-        if (!response.ok) throw new Error(`POST ${path} failed: ${response.status}`);
-        return response.json();
+    function toast(msg, type = 'success') {
+        const el = document.getElementById('toast');
+        el.textContent = type === 'success' ? '✓  ' + msg : '✗  ' + msg;
+        el.className = `toast ${type}`;
+        clearTimeout(el._t);
+        el._t = setTimeout(() => el.classList.add('hidden'), 3000);
     }
 
-    /**
-     * PUT request: send updated data to the backend to update a record.
-     */
-    async function apiPut(path, data) {
-        const response = await fetch(`${API_BASE}${path}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
-        if (!response.ok) throw new Error(`PUT ${path} failed: ${response.status}`);
-        return response.json();
+    function setError(elId, msg) {
+        const el = document.getElementById(elId);
+        el.innerHTML = msg ? `<div class="error-inline">${msg}</div>` : '';
     }
 
-    /**
-     * DELETE request: remove a record from the backend.
-     */
-    async function apiDelete(path) {
-        const response = await fetch(`${API_BASE}${path}`, { method: 'DELETE' });
-        if (!response.ok) throw new Error(`DELETE ${path} failed: ${response.status}`);
-        // DELETE returns 204 No Content (no body), so we don't parse JSON
+    function formatDate(d) {
+        if (!d) return '';
+        const [y, m, day] = d.split('-').map(Number);
+        return new Date(y, m - 1, day).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     }
 
-    // =====================================================
-    // STATE & UTILITIES
-    // =====================================================
-    let isAdmin = false;
-    let editingArticleId = null;
-
-    function showPage(pageId) {
-        document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
-        document.getElementById(pageId).classList.remove('hidden');
-    }
-
-    function formatDate(dateString) {
-        // dateString from backend is "2024-01-15"
-        const [year, month, day] = dateString.split('-').map(Number);
-        const date = new Date(year, month - 1, day);
-        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    }
-
-    function showLoading(containerId) {
-        document.getElementById(containerId).innerHTML = '<div class="loading">Loading</div>';
-    }
-
-    function showDashboardNotification(message, type = 'success') {
-        const el = document.getElementById('dashboardNotification');
-        el.innerHTML = `<div class="${type === 'success' ? 'success-banner' : 'error-banner'}">${message}</div>`;
-        setTimeout(() => el.innerHTML = '', 3000);
-    }
-
-    // =====================================================
-    // HOME PAGE: Render published articles
-    // =====================================================
-    async function renderArticlesList() {
-        const container = document.getElementById('articlesList');
-        showLoading('articlesList');
-
-        try {
-            // GET http://localhost:8080/api/articles/published
-            const articles = await apiGet('/articles/published');
-
-            if (articles.length === 0) {
-                container.innerHTML = '<p style="color: #6b7280;">No articles published yet.</p>';
-                return;
-            }
-
-            container.innerHTML = articles.map(article => `
-                    <div class="article-card" data-id="${article.id}">
-                        <h3 class="article-title">${article.title}</h3>
-                        <p class="article-date">Published on ${formatDate(article.date)}</p>
-                        <p class="article-preview">${article.content.substring(0, 200)}...</p>
-                        <a href="#" class="read-more">Read more ?</a>
-                    </div>
-                `).join('');
-
-            container.querySelectorAll('.article-card').forEach(card => {
-                card.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    viewArticle(parseInt(card.dataset.id));
-                });
-            });
-        } catch (err) {
-            container.innerHTML = `
-                    <div class="error-banner">
-                        ?? Could not connect to the backend. Make sure your Java server is running at http://localhost:8080
-                        <span style="font-size:0.85rem;display:block;margin-top:4px">Error: ${err.message}</span>
-                    </div>`;
+    function updateHeader() {
+        const actions = document.getElementById('headerActions');
+        if (currentUser) {
+            actions.innerHTML = `
+                <span style="font-size:0.875rem;color:rgba(250,248,244,0.6);">${currentUser}</span>
+                <button class="btn btn-ghost" id="logoutBtn">Log out</button>
+            `;
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+        } else {
+            actions.innerHTML = `
+                <button class="btn btn-ghost" id="headerLoginBtn">Log in</button>
+                <button class="btn btn-primary" id="headerRegisterBtn">Get started</button>
+            `;
+            document.getElementById('headerLoginBtn').addEventListener('click', () => showPage('loginPage'));
+            document.getElementById('headerRegisterBtn').addEventListener('click', () => showPage('registerPage'));
         }
     }
 
-    // =====================================================
-    // ARTICLE DETAIL PAGE
-    // =====================================================
-    async function viewArticle(id) {
-        const container = document.getElementById('articleDetail');
-        showPage('articlePage');
-        showLoading('articleDetail');
+    // ─── API CALLS ───────────────────────────────────────────
+    async function apiFetch(method, path, body) {
+        const opts = {
+            method,
+            credentials: 'include',  // send JWT cookie automatically
+            headers: {}
+        };
+        if (body) {
+            opts.headers['Content-Type'] = 'application/json';
+            opts.body = JSON.stringify(body);
+        }
+        const res = await fetch(API + path, opts);
+        return res;
+    }
 
-        try {
-            // GET http://localhost:8080/api/articles/1
-            const article = await apiGet(`/articles/${id}`);
-            container.innerHTML = `
-                    <div class="article-card" style="cursor: default;">
-                        <h2 class="article-title" style="font-size: 2.5rem;">${article.title}</h2>
-                        <p class="article-date">Published on ${formatDate(article.date)}</p>
-                        <div class="article-content">${article.content}</div>
-                    </div>
-                `;
-        } catch (err) {
-            container.innerHTML = `<div class="error-banner">?? Could not load article. ${err.message}</div>`;
+    // ─── AUTH ─────────────────────────────────────────────────
+    async function login(username, password) {
+        const res = await apiFetch('POST', '/auth/login', { username, password });
+        if (!res.ok) throw new Error('Invalid username or password.');
+        return username;
+    }
+
+    async function register(username, password) {
+        const res = await apiFetch('POST', '/auth/register', { username, password });
+        if (!res.ok) {
+            const txt = await res.text().catch(() => '');
+            throw new Error(txt || 'Registration failed. Username may already be taken.');
         }
     }
 
-    // =====================================================
-    // DASHBOARD PAGE
-    // =====================================================
+    function logout() {
+        currentUser = null;
+        updateHeader();
+        showPage('welcomePage');
+        toast('You\'ve been logged out.');
+    }
+
+    // ─── DASHBOARD ───────────────────────────────────────────
     async function renderDashboard() {
+        document.getElementById('dashUsername').textContent = currentUser;
         const container = document.getElementById('dashboardArticles');
-        showLoading('dashboardArticles');
+        container.innerHTML = '<p style="color:var(--muted);padding:1rem 0;">Loading…</p>';
 
         try {
-            // GET http://localhost:8080/api/articles  (all articles, including drafts)
-            const articles = await apiGet('/articles');
+            const res = await apiFetch('GET', '/articles');
+            if (!res.ok) throw new Error('Failed to load articles.');
+            const articles = await res.json();
 
-            if (articles.length === 0) {
-                container.innerHTML = '<p style="color: #6b7280;">No articles yet. Click "Add New Article" to create one.</p>';
+            if (!articles.length) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📝</div>
+                        <p>No articles yet. Start writing!</p>
+                        <button class="btn btn-primary" onclick="document.getElementById('newArticleBtn').click()">Write your first article</button>
+                    </div>`;
                 return;
             }
 
-            container.innerHTML = articles.map(article => `
-                    <div class="dashboard-article">
-                        <div class="article-info">
-                            <h3>${article.title}</h3>
-                            <p class="article-date">${formatDate(article.date)} ${!article.published ? '� <em>Draft</em>' : ''}</p>
-                        </div>
-                        <div class="action-buttons">
-                            <button class="btn btn-primary edit-btn" data-id="${article.id}">Edit</button>
-                            <button class="btn btn-danger delete-btn" data-id="${article.id}">Delete</button>
-                        </div>
+            container.innerHTML = articles.map(a => `
+                <div class="article-row">
+                    <div class="article-row-info">
+                        <h3>${escHtml(a.title)}</h3>
+                        <div class="meta">${formatDate(a.date)}</div>
                     </div>
-                `).join('');
+                    <div class="article-row-actions">
+                        <button class="btn btn-edit" data-id="${a.id}">Edit</button>
+                        <button class="btn btn-danger" data-id="${a.id}">Delete</button>
+                    </div>
+                </div>
+            `).join('');
 
-            container.querySelectorAll('.edit-btn').forEach(btn => {
-                btn.addEventListener('click', () => editArticle(parseInt(btn.dataset.id)));
-            });
-            container.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', () => deleteArticle(parseInt(btn.dataset.id)));
-            });
+            container.querySelectorAll('.btn-edit').forEach(b =>
+                b.addEventListener('click', () => openEdit(+b.dataset.id)));
+            container.querySelectorAll('.btn-danger').forEach(b =>
+                b.addEventListener('click', () => deleteArticle(+b.dataset.id)));
+
         } catch (err) {
-            container.innerHTML = `<div class="error-banner">?? Could not load dashboard. Make sure your Java server is running. ${err.message}</div>`;
+            container.innerHTML = `<div class="error-inline">⚠ ${err.message}</div>`;
         }
     }
 
-    // =====================================================
-    // EDIT ARTICLE
-    // =====================================================
-    async function editArticle(id) {
+    function escHtml(str) {
+        return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // ─── EDIT ─────────────────────────────────────────────────
+    async function openEdit(id) {
         try {
-            // GET http://localhost:8080/api/articles/1
-            const article = await apiGet(`/articles/${id}`);
-            editingArticleId = id;
-            document.getElementById('editTitle').value = article.title;
-            document.getElementById('editDate').value = article.date;
-            document.getElementById('editContent').value = article.content;
+            const res = await apiFetch('GET', `/articles/${id}`);
+            if (!res.ok) throw new Error('Could not load article.');
+            const a = await res.json();
+            editingId = id;
+            document.getElementById('editTitle').value = a.title;
+            document.getElementById('editDate').value = a.date;
+            document.getElementById('editContent').value = a.content;
             showPage('editArticlePage');
         } catch (err) {
-            showDashboardNotification(`Could not load article for editing: ${err.message}`, 'error');
+            toast(err.message, 'error');
         }
     }
 
-    // =====================================================
-    // DELETE ARTICLE
-    // =====================================================
+    // ─── DELETE ───────────────────────────────────────────────
     async function deleteArticle(id) {
-        if (!confirm('Are you sure you want to delete this article?')) return;
+        if (!confirm('Delete this article? This cannot be undone.')) return;
         try {
-            // DELETE http://localhost:8080/api/articles/1
-            await apiDelete(`/articles/${id}`);
-            showDashboardNotification('Article deleted successfully!');
+            const res = await apiFetch('DELETE', `/articles/${id}`);
+            if (!res.ok) throw new Error('Delete failed.');
+            toast('Article deleted.');
             renderDashboard();
         } catch (err) {
-            showDashboardNotification(`Delete failed: ${err.message}`, 'error');
+            toast(err.message, 'error');
         }
     }
 
-    // =====================================================
-    // EVENT LISTENERS
-    // =====================================================
-    document.getElementById('siteTitle').addEventListener('click', () => {
-        if (!isAdmin) { showPage('homePage'); renderArticlesList(); }
+    // ─── EVENT LISTENERS ─────────────────────────────────────
+
+    // Logo → home
+    document.getElementById('logoBtn').addEventListener('click', () => {
+        if (currentUser) { showPage('dashboardPage'); renderDashboard(); }
+        else showPage('welcomePage');
     });
 
-    // Toggle Admin / Login flow
-    document.getElementById('adminToggle').addEventListener('click', () => {
-        const btn = document.getElementById('adminToggle');
-        if (!isAdmin) {
-            // If not logged in, show the login page
-            showPage('loginPage');
-        } else {
-            // If already logged in, log out and go home
-            isAdmin = false;
-            btn.textContent = 'Admin';
-            showPage('homePage');
-            renderArticlesList();
-        }
-    });
+    // Welcome page CTAs
+    document.getElementById('heroRegisterBtn').addEventListener('click', () => showPage('registerPage'));
+    document.getElementById('heroLoginBtn').addEventListener('click', () => showPage('loginPage'));
 
-    // Handle Login Form Submission (UPDATED for Backend)
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const loginBtn = e.target.querySelector('button[type="submit"]');
-        const user = document.getElementById('loginUser').value;
+    // Login form
+    document.getElementById('loginSubmitBtn').addEventListener('click', async () => {
+        const btn = document.getElementById('loginSubmitBtn');
+        const user = document.getElementById('loginUser').value.trim();
         const pass = document.getElementById('loginPass').value;
+        setError('loginError', '');
+        if (!user || !pass) { setError('loginError', 'Please fill in all fields.'); return; }
 
-        loginBtn.textContent = 'Authenticating...';
-        loginBtn.disabled = true;
-
+        btn.innerHTML = '<span class="loading-spinner"></span> Signing in…';
+        btn.disabled = true;
         try {
-            // 1. Send credentials to your new Java endpoint
-            // The backend should return a success status (200 OK) if matched
-            const response = await fetch(`${API_BASE}/articles/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: user, password: pass })
-            });
-
-            if (response.ok) {
-                // 2. SUCCESS: Transition to Admin mode
-                isAdmin = true;
-                document.getElementById('adminToggle').textContent = 'Exit Admin';
-                document.getElementById('loginForm').reset();
-
-                showPage('dashboardPage');
-                showDashboardNotification('Successfully logged in!', 'success');
-                renderDashboard();
-            } else {
-                // 3. FAILURE: Wrong credentials
-                alert('Invalid username or password.');
-            }
+            await login(user, pass);
+            currentUser = user;
+            updateHeader();
+            document.getElementById('loginUser').value = '';
+            document.getElementById('loginPass').value = '';
+            showPage('dashboardPage');
+            renderDashboard();
+            toast('Welcome back, ' + user + '!');
         } catch (err) {
-            // 4. ERROR: Server is down or network issue
-            alert('Could not connect to authentication server: ' + err.message);
+            setError('loginError', err.message);
         } finally {
-            loginBtn.textContent = 'Login';
-            loginBtn.disabled = false;
+            btn.innerHTML = 'Sign in';
+            btn.disabled = false;
         }
     });
 
-    // Handle Login Cancel
-    document.getElementById('cancelLogin').addEventListener('click', (e) => {
-        e.preventDefault();
-        document.getElementById('loginForm').reset();
-        showPage('homePage');
+    // Allow Enter key on login fields
+    ['loginUser','loginPass'].forEach(id =>
+        document.getElementById(id).addEventListener('keydown', e => {
+            if (e.key === 'Enter') document.getElementById('loginSubmitBtn').click();
+        })
+    );
+
+    document.getElementById('cancelLoginBtn').addEventListener('click', e => { e.preventDefault(); showPage('welcomePage'); });
+    document.getElementById('switchToRegister').addEventListener('click', e => { e.preventDefault(); showPage('registerPage'); });
+
+    // Register form
+    document.getElementById('registerSubmitBtn').addEventListener('click', async () => {
+        const btn = document.getElementById('registerSubmitBtn');
+        const user = document.getElementById('regUser').value.trim();
+        const pass = document.getElementById('regPass').value;
+        setError('registerError', '');
+        if (!user || !pass) { setError('registerError', 'Please fill in all fields.'); return; }
+        if (pass.length < 4) { setError('registerError', 'Password must be at least 4 characters.'); return; }
+
+        btn.innerHTML = '<span class="loading-spinner"></span> Creating account…';
+        btn.disabled = true;
+        try {
+            await register(user, pass);
+            // Auto-login after register
+            await login(user, pass);
+            currentUser = user;
+            updateHeader();
+            document.getElementById('regUser').value = '';
+            document.getElementById('regPass').value = '';
+            showPage('dashboardPage');
+            renderDashboard();
+            toast('Account created! Welcome, ' + user + ' 🎉');
+        } catch (err) {
+            setError('registerError', err.message);
+        } finally {
+            btn.innerHTML = 'Create account';
+            btn.disabled = false;
+        }
     });
 
-    document.getElementById('backToHome').addEventListener('click', (e) => {
-        e.preventDefault();
-        showPage('homePage');
-    });
+    ['regUser','regPass'].forEach(id =>
+        document.getElementById(id).addEventListener('keydown', e => {
+            if (e.key === 'Enter') document.getElementById('registerSubmitBtn').click();
+        })
+    );
 
-    document.getElementById('addNewArticle').addEventListener('click', () => {
+    document.getElementById('cancelRegisterBtn').addEventListener('click', e => { e.preventDefault(); showPage('welcomePage'); });
+    document.getElementById('switchToLogin').addEventListener('click', e => { e.preventDefault(); showPage('loginPage'); });
+
+    // Dashboard → New article
+    document.getElementById('newArticleBtn').addEventListener('click', () => {
+        document.getElementById('addTitle').value = '';
         document.getElementById('addDate').value = new Date().toISOString().split('T')[0];
-        document.getElementById('addArticleForm').reset();
-        document.getElementById('addDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('addContent').value = '';
         showPage('addArticlePage');
     });
 
-    document.getElementById('backToDashboardFromAdd').addEventListener('click', (e) => {
-        e.preventDefault();
-        showPage('dashboardPage');
-    });
-
-    document.getElementById('backToDashboardFromEdit').addEventListener('click', (e) => {
-        e.preventDefault();
-        showPage('dashboardPage');
-    });
-
-    document.getElementById('cancelAdd').addEventListener('click', () => showPage('dashboardPage'));
-    document.getElementById('cancelEdit').addEventListener('click', () => showPage('dashboardPage'));
-
-    // =====================================================
-    // FORM: Create Article
-    // =====================================================
-    document.getElementById('addArticleForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
+    // Add article
+    document.getElementById('addSubmitBtn').addEventListener('click', async () => {
         const btn = document.getElementById('addSubmitBtn');
-        btn.textContent = 'Publishing...';
+        const title = document.getElementById('addTitle').value.trim();
+        const date = document.getElementById('addDate').value;
+        const content = document.getElementById('addContent').value.trim();
+        if (!title || !date || !content) { toast('Please fill in all fields.', 'error'); return; }
+
+        btn.innerHTML = '<span class="loading-spinner"></span> Publishing…';
         btn.disabled = true;
-
-        const data = {
-            title: document.getElementById('addTitle').value,
-            content: document.getElementById('addContent').value,
-            date: document.getElementById('addDate').value,
-            published: true
-        };
-
         try {
-            // POST http://localhost:8080/api/articles
-            await apiPost('/articles', data);
-            document.getElementById('addArticleForm').reset();
+            const res = await apiFetch('POST', '/articles', { title, date, content, published: true });
+            if (!res.ok) throw new Error('Failed to publish article.');
             showPage('dashboardPage');
-            showDashboardNotification('? Article published successfully!');
             renderDashboard();
+            toast('Article published!');
         } catch (err) {
-            alert(`Failed to create article: ${err.message}`);
+            toast(err.message, 'error');
         } finally {
-            btn.textContent = 'Publish Article';
+            btn.innerHTML = 'Publish article';
             btn.disabled = false;
         }
     });
 
-    // =====================================================
-    // FORM: Update Article
-    // =====================================================
-    document.getElementById('editArticleForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
+    document.getElementById('backFromAdd').addEventListener('click', e => { e.preventDefault(); showPage('dashboardPage'); });
+    document.getElementById('cancelAddBtn').addEventListener('click', () => showPage('dashboardPage'));
+
+    // Edit article
+    document.getElementById('editSubmitBtn').addEventListener('click', async () => {
         const btn = document.getElementById('editSubmitBtn');
-        btn.textContent = 'Updating...';
+        const title = document.getElementById('editTitle').value.trim();
+        const date = document.getElementById('editDate').value;
+        const content = document.getElementById('editContent').value.trim();
+        if (!title || !date || !content) { toast('Please fill in all fields.', 'error'); return; }
+
+        btn.innerHTML = '<span class="loading-spinner"></span> Saving…';
         btn.disabled = true;
-
-        const data = {
-            title: document.getElementById('editTitle').value,
-            content: document.getElementById('editContent').value,
-            date: document.getElementById('editDate').value,
-            published: true
-        };
-
         try {
-            // PUT http://localhost:8080/api/articles/1
-            await apiPut(`/articles/${editingArticleId}`, data);
-            editingArticleId = null;
-            document.getElementById('editArticleForm').reset();
+            const res = await apiFetch('PUT', `/articles/${editingId}`, { title, date, content, published: true });
+            if (!res.ok) throw new Error('Failed to save changes.');
+            editingId = null;
             showPage('dashboardPage');
-            showDashboardNotification('? Article updated successfully!');
             renderDashboard();
+            toast('Article updated!');
         } catch (err) {
-            alert(`Failed to update article: ${err.message}`);
+            toast(err.message, 'error');
         } finally {
-            btn.textContent = 'Update Article';
+            btn.innerHTML = 'Save changes';
             btn.disabled = false;
         }
     });
 
-    // =====================================================
-    // INITIAL RENDER
-    // =====================================================
-    renderArticlesList();
+    document.getElementById('backFromEdit').addEventListener('click', e => { e.preventDefault(); showPage('dashboardPage'); });
+    document.getElementById('cancelEditBtn').addEventListener('click', () => { showPage('dashboardPage'); });
+
+    // Initial header state
+    updateHeader();
 </script>
 </body>
 </html>
-

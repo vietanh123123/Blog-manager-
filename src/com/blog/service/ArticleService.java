@@ -55,13 +55,29 @@ public class ArticleService {
         return articleRepository.findById(id);
     }
 
+    /**
+     * Get all articles for a specific user by their userId.
+     * Accepts String userId from JWT token and converts to long.
+     */
+    public List<Article> getArticlesByUserId(String userIdStr) throws SQLException {
+        if (userIdStr == null || userIdStr.isBlank()) {
+            throw new IllegalArgumentException("User ID is required");
+        }
+
+        try {
+            long userId = Long.parseLong(userIdStr);
+            return articleRepository.findByUserId(userId);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid user ID format: " + userIdStr);
+        }
+    }
     // ============================================================
     // WRITE OPERATIONS
     // ============================================================
 
     /**
      * Create a new article from a parsed JSON body map.
-     *
+     * <p>
      * The Map comes from JsonUtil.parseJsonBody() — it has keys like
      * "title", "content", "date", "published".
      *
@@ -69,7 +85,7 @@ public class ArticleService {
      */
     public Article createArticle(Map<String, String> fields) throws SQLException {
         // Validate required fields
-        String title   = fields.get("title");
+        String title = fields.get("title");
         String content = fields.get("content");
         String dateStr = fields.get("date");
 
@@ -119,7 +135,7 @@ public class ArticleService {
         }
 
         // Validate and parse fields
-        String title   = fields.get("title");
+        String title = fields.get("title");
         String content = fields.get("content");
         String dateStr = fields.get("date");
 
@@ -152,6 +168,7 @@ public class ArticleService {
         return articleRepository.findById(id);
     }
 
+
     /**
      * Delete an article by ID.
      *
@@ -162,8 +179,4 @@ public class ArticleService {
     }
 
 
-    public User getAdmin() {
-        // Just pick a random admin user for comparison in the controller
-        return articleRepository.arbitraryUser();
-    }
 }
