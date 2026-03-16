@@ -111,6 +111,24 @@ public class ArticleRepository {
         }
     }
 
+    public Optional<Article> findByIdAndUserId(long id, long userId) throws SQLException {
+        String sql = "SELECT * FROM articles WHERE id = ? AND user_id = ?";
+
+        try (Connection conn = db.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setLong(1, id);
+            ps.setLong(2, userId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(mapRow(rs));
+                }
+                return Optional.empty();
+            }
+        }
+    }
+
     /**
      * GET ALL ARTICLES FOR A SPECIFIC USER
      *
@@ -118,6 +136,20 @@ public class ArticleRepository {
      */
     public List<Article> findByUserId(long userId) throws SQLException {
         String sql = "SELECT * FROM articles WHERE user_id = ? ORDER BY date DESC";
+
+        try (Connection conn = db.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setLong(1, userId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                return mapResultSetToList(rs);
+            }
+        }
+    }
+
+    public List<Article> findPublishedByUserId(long userId) throws SQLException {
+        String sql = "SELECT * FROM articles WHERE user_id = ? AND published = TRUE ORDER BY date DESC";
 
         try (Connection conn = db.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -147,9 +179,13 @@ public class ArticleRepository {
      * We set the generated ID back on the article object before returning it.
      */
     public Article save(Article article) throws SQLException {
+        if (article.getUserId() == null) {
+            throw new IllegalArgumentException("Article must have an owner before saving");
+        }
+
         String sql = """
-            INSERT INTO articles (title, content, date, published)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO articles (title, content, date, published, user_id)
+            VALUES (?, ?, ?, ?, ?)
             RETURNING id, created_at, updated_at
             """;
 
@@ -160,6 +196,7 @@ public class ArticleRepository {
             ps.setString(2, article.getContent());
             ps.setDate(3, Date.valueOf(article.getDate())); // LocalDate → java.sql.Date
             ps.setBoolean(4, article.isPublished());
+            ps.setLong(5, article.getUserId());
 
             // executeQuery() for INSERT ... RETURNING (it returns rows)
             try (ResultSet rs = ps.executeQuery()) {
@@ -195,21 +232,22 @@ public class ArticleRepository {
      * Returns true if a row was updated, false if no article with that ID existed.
      * executeUpdate() returns the number of rows affected — 0 means nothing was updated.
      */
-    public boolean update(long id, Article article) throws SQLException {
+    public boolean update(long id, long userId, Article article) throws SQLException {
         String sql = """
             UPDATE articles
             SET title = ?, content = ?, date = ?, published = ?, updated_at = NOW()
-            WHERE id = ?
+            WHERE id = ? AND user_id = ?
             """;
 
         try (Connection conn = db.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, article.getTitle());
-            ps.setString(2, article.getContent());
+            ps.setString(2, article.getContent ());
             ps.setDate(3, Date.valueOf(article.getDate()));
             ps.setBoolean(4, article.isPublished());
-            ps.setLong(5, id); // the WHERE clause
+            ps.setLong(5, id);
+            ps.setLong(6, userId);
 
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0; // true = successfully updated
@@ -223,13 +261,14 @@ public class ArticleRepository {
      *
      * Returns true if a row was deleted, false if no article with that ID existed.
      */
-    public boolean delete(long id) throws SQLException {
-        String sql = "DELETE FROM articles WHERE id = ?";
+    public boolean delete(long id, long userId) throws SQLException {
+        String sql = "DELETE FROM articles WHERE id = ? AND user_id = ?";
 
         try (Connection conn = db.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setLong(1, id);
+            ps.setLong(2, userId);
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
         }
@@ -255,6 +294,10 @@ public class ArticleRepository {
     private Article mapRow(ResultSet rs) throws SQLException {
         Article article = new Article();
         article.setId(rs.getLong("id"));
+
+        long ownerId = rs.getLong("user_id");
+        article.setUserId(rs.wasNull() ? null : ownerId);
+
         article.setTitle(rs.getString("title"));
         article.setContent(rs.getString("content"));
 

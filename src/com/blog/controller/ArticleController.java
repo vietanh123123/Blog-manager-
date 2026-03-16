@@ -1,7 +1,6 @@
 package com.blog.controller;
 
 import com.blog.model.Article;
-import com.blog.model.User;
 import com.blog.server.Router;
 import com.blog.service.ArticleService;
 import com.blog.util.JsonUtil;
@@ -69,14 +68,13 @@ public class ArticleController {
      * Used by: public home page
      */
     private void getPublishedArticles(HttpExchange exchange, Map<String, String> pathVars) {
-        
-        Map<String, String> user = authenticateUser(exchange);
-        if (user == null) {
-            return; // Error already sent
+        Long userId = requireUserId(exchange);
+        if (userId == null) {
+            return;
         }
-        
+
         try {
-            List<Article> articles = articleService.getArticlesByUserId(user.get("userId"));
+            List<Article> articles = articleService.getPublishedArticlesForUser(userId);
             String json = JsonUtil.articlesToJson(articles);
             sendResponse(exchange, 200, json);
         } catch (Exception e) {
@@ -89,13 +87,13 @@ public class ArticleController {
      * Returns ALL articles (including drafts) for  dashboard.
      */
     private void getAllArticles(HttpExchange exchange, Map<String, String> pathVars) {
-        Map<String, String> user = authenticateUser(exchange);
-        if (user == null) {
-            return; // Error already sent
+        Long userId = requireUserId(exchange);
+        if (userId == null) {
+            return;
         }
-        
+
         try {
-            List<Article> articles = articleService.getAllArticles();
+            List<Article> articles = articleService.getArticlesByUserId(userId);
             String json = JsonUtil.articlesToJson(articles);
             sendResponse(exchange, 200, json);
         } catch (Exception e) {
@@ -111,15 +109,15 @@ public class ArticleController {
      * We parse it to a long before using it.
      */
     private void getArticleById(HttpExchange exchange, Map<String, String> pathVars) {
-        Map<String, String> user = authenticateUser(exchange);
-        if (user == null) {
-            return; // Error already sent
+        Long userId = requireUserId(exchange);
+        if (userId == null) {
+            return;
         }
-        
+
         try {
             long id = parseLongId(pathVars.get("id"));
 
-            Optional<Article> article = articleService.getArticleById(id);
+            Optional<Article> article = articleService.getArticleById(id, userId);
 
             if (article.isEmpty()) {
                 Router.sendError(exchange, 404, "Article not found with id: " + id);
@@ -145,11 +143,11 @@ public class ArticleController {
      * 4. Return 201 Created with the new article JSON
      */
     private void createArticle(HttpExchange exchange, Map<String, String> pathVars) {
-        Map<String, String> user = authenticateUser(exchange);
-        if (user == null) {
-            return; // Error already sent
+        Long userId = requireUserId(exchange);
+        if (userId == null) {
+            return;
         }
-        
+
         try {
             // Read the JSON request body as a String
             String body = readRequestBody(exchange);
@@ -161,7 +159,7 @@ public class ArticleController {
             Map<String, String> fields = JsonUtil.parseJsonBody(body);
 
             // Create the article (service validates fields)
-            Article created = articleService.createArticle(fields);
+            Article created = articleService.createArticle(fields, userId);
 
             // Return 201 Created with the new article
             sendResponse(exchange, 201, JsonUtil.articleToJson(created));
@@ -182,17 +180,17 @@ public class ArticleController {
      * Updates an existing article.
      */
     private void updateArticle(HttpExchange exchange, Map<String, String> pathVars) {
-        Map<String, String> user = authenticateUser(exchange);
-        if (user == null) {
-            return; // Error already sent
+        Long userId = requireUserId(exchange);
+        if (userId == null) {
+            return;
         }
-        
+
         try {
             long id = parseLongId(pathVars.get("id"));
             String body = readRequestBody(exchange);
             Map<String, String> fields = JsonUtil.parseJsonBody(body);
 
-            Optional<Article> updated = articleService.updateArticle(id, fields);
+            Optional<Article> updated = articleService.updateArticle(id, userId, fields);
 
             if (updated.isEmpty()) {
                 Router.sendError(exchange, 404, "Article not found with id: " + id);
@@ -216,14 +214,14 @@ public class ArticleController {
      * Returns 204 No Content on success (same as the Spring version).
      */
     private void deleteArticle(HttpExchange exchange, Map<String, String> pathVars) {
-        Map<String, String> user = authenticateUser(exchange);
-        if (user == null) {
-            return; // Error already sent
+        Long userId = requireUserId(exchange);
+        if (userId == null) {
+            return;
         }
-        
+
         try {
             long id = parseLongId(pathVars.get("id"));
-            boolean deleted = articleService.deleteArticle(id);
+            boolean deleted = articleService.deleteArticle(id, userId);
 
             if (!deleted) {
                 Router.sendError(exchange, 404, "Article not found with id: " + id);
@@ -327,6 +325,26 @@ public class ArticleController {
             return user;
         } catch (Exception e) {
             Router.sendError(exchange, 401, "Unauthorized: Invalid or expired token.");
+            return null;
+        }
+    }
+
+    private Long requireUserId(HttpExchange exchange) {
+        Map<String, String> user = authenticateUser(exchange);
+        if (user == null) {
+            return null;
+        }
+
+        String userIdStr = user.get("userId");
+        if (userIdStr == null || userIdStr.isBlank()) {
+            Router.sendError(exchange, 401, "Unauthorized: Missing user identifier.");
+            return null;
+        }
+
+        try {
+            return Long.parseLong(userIdStr);
+        } catch (NumberFormatException e) {
+            Router.sendError(exchange, 400, "Invalid user identifier.");
             return null;
         }
     }

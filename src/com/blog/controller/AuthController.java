@@ -63,7 +63,7 @@ import java.util.Optional;
     
                     // Set token in HTTP-only cookie with 15-minute expiry
                     String cookieValue = String.format(
-                        "token=%s; HttpOnly; Max-Age=900; Path=/",
+                         "token=%s; HttpOnly; Secure; SameSite=None; Max-Age=900; Path=/",
                         token
                     );
                     exchange.getResponseHeaders().set("Set-Cookie", cookieValue);

@@ -16,19 +16,21 @@ import java.time.LocalDateTime;
  * DATABASE TABLE (you create this manually — see README):
  *
 // *   CREATE TABLE articles (
- *       id         BIGSERIAL PRIMARY KEY,
- *       title      VARCHAR(500) NOT NULL,
- *       content    TEXT NOT NULL,
- *       date       DATE NOT NULL,
- *       published  BOOLEAN NOT NULL DEFAULT TRUE,
- *       created_at TIMESTAMP DEFAULT NOW(),
- *       updated_at TIMESTAMP DEFAULT NOW()
- *   );
+// *       id         BIGSERIAL PRIMARY KEY,
+// *       title      VARCHAR(500) NOT NULL,
+// *       content    TEXT NOT NULL,
+// *       date       DATE NOT NULL,
+// *       published  BOOLEAN NOT NULL DEFAULT TRUE,
+// *       user_id    BIGINT REFERENCES users(id) ON DELETE CASCADE,
+// *       created_at TIMESTAMP DEFAULT NOW(),
+// *       updated_at TIMESTAMP DEFAULT NOW()
+// *   );
  */
 public class Article {
 
     // These fields map 1-to-1 with columns in the articles table
     private Long id;
+    private Long userId;
     private String title;
     private String content;
     private LocalDate date;
@@ -50,6 +52,9 @@ public class Article {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
+
 
     // --- Getters & Setters ---
     // Without Lombok (which was a Spring-world shortcut), we write these manually.

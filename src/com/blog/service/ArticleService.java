@@ -1,7 +1,6 @@
 package com.blog.service;
 
 import com.blog.model.Article;
-import com.blog.model.User;
 import com.blog.repository.ArticleRepository;
 
 import java.sql.SQLException;
@@ -33,43 +32,16 @@ public class ArticleService {
     // READ OPERATIONS
     // ============================================================
 
-    /**
-     * Get all published articles for the public home page.
-     */
-    public List<Article> getAllPublishedArticles() throws SQLException {
-        return articleRepository.findAllPublished();
+    public List<Article> getArticlesByUserId(long userId) throws SQLException {
+        return articleRepository.findByUserId(userId);
     }
 
-    /**
-     * Get all articles (including drafts) for the admin dashboard.
-     */
-    public List<Article> getAllArticles() throws SQLException {
-        return articleRepository.findAll();
+    public List<Article> getPublishedArticlesForUser(long userId) throws SQLException {
+        return articleRepository.findPublishedByUserId(userId);
     }
 
-    /**
-     * Get a single article by ID.
-     * Returns empty Optional if not found.
-     */
-    public Optional<Article> getArticleById(long id) throws SQLException {
-        return articleRepository.findById(id);
-    }
-
-    /**
-     * Get all articles for a specific user by their userId.
-     * Accepts String userId from JWT token and converts to long.
-     */
-    public List<Article> getArticlesByUserId(String userIdStr) throws SQLException {
-        if (userIdStr == null || userIdStr.isBlank()) {
-            throw new IllegalArgumentException("User ID is required");
-        }
-
-        try {
-            long userId = Long.parseLong(userIdStr);
-            return articleRepository.findByUserId(userId);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Invalid user ID format: " + userIdStr);
-        }
+    public Optional<Article> getArticleById(long id, long userId) throws SQLException {
+        return articleRepository.findByIdAndUserId(id, userId);
     }
     // ============================================================
     // WRITE OPERATIONS
@@ -83,7 +55,7 @@ public class ArticleService {
      *
      * @throws IllegalArgumentException if required fields are missing/invalid
      */
-    public Article createArticle(Map<String, String> fields) throws SQLException {
+    public Article createArticle(Map<String, String> fields, long userId) throws SQLException {
         // Validate required fields
         String title = fields.get("title");
         String content = fields.get("content");
@@ -114,6 +86,7 @@ public class ArticleService {
 
         // Build the Article object and save it
         Article article = new Article();
+        article.setUserId(userId);
         article.setTitle(title.trim());
         article.setContent(content.trim());
         article.setDate(date);
@@ -127,9 +100,8 @@ public class ArticleService {
      *
      * @return the updated Article, or empty Optional if ID not found
      */
-    public Optional<Article> updateArticle(long id, Map<String, String> fields) throws SQLException {
-        // Check the article exists first
-        Optional<Article> existing = articleRepository.findById(id);
+    public Optional<Article> updateArticle(long id, long userId, Map<String, String> fields) throws SQLException {
+        Optional<Article> existing = articleRepository.findByIdAndUserId(id, userId);
         if (existing.isEmpty()) {
             return Optional.empty();
         }
@@ -157,15 +129,15 @@ public class ArticleService {
 
         // Build updated article
         Article updated = new Article();
+        updated.setUserId(userId);
         updated.setTitle(title.trim());
         updated.setContent(content.trim());
         updated.setDate(date);
         updated.setPublished(published);
 
-        articleRepository.update(id, updated);
+        articleRepository.update(id, userId, updated);
 
-        // Return the fresh data from DB
-        return articleRepository.findById(id);
+        return articleRepository.findByIdAndUserId(id, userId);
     }
 
 
@@ -174,8 +146,8 @@ public class ArticleService {
      *
      * @return true if deleted, false if not found
      */
-    public boolean deleteArticle(long id) throws SQLException {
-        return articleRepository.delete(id);
+    public boolean deleteArticle(long id, long userId) throws SQLException {
+        return articleRepository.delete(id, userId);
     }
 
 

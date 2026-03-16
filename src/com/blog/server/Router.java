@@ -223,22 +223,41 @@
      *   String userId = (String) exchange.getAttribute("userId");
      */
     public static boolean requireAuth(HttpExchange exchange) throws IOException {
-            String authHeader = exchange.getRequestHeaders().getFirst("Authorization");
+                    // 1. Get the Cookie header instead of the Authorization header
+            String cookieHeader = exchange.getRequestHeaders().getFirst("Cookie");
 
-            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                sendResponse(exchange, 401, "{\"error\":\"Missing token\"}");
+            if (cookieHeader == null || !cookieHeader.contains("token=")) {
+                sendResponse(exchange, 401, "{\"error\":\"Missing token cookie\"}");
                 return false;
             }
 
             try {
-                String token = authHeader.substring(7); // strip "Bearer "
+                // 2. Extract the actual JWT string from the cookie
+                String token = null;
+                String[] cookies = cookieHeader.split(";");
+                for (String cookie : cookies) {
+                    if (cookie.trim().startsWith("token=")) {
+                        token = cookie.trim().substring("token=".length());
+                        break;
+                    }
+                }
+
+                if (token == null || token.isBlank()) {
+                    sendResponse(exchange, 401, "{\"error\":\"Token not found in cookies\"}");
+                    return false;
+                }
+
+                // 3. Verify the token
                 Map<String, String> claims = JwtUtil.verifyToken(token);
-                // Attach userId to exchange so handlers can read it
+                
+                // 4. Attach userId to the exchange so your handlers can use it
                 exchange.setAttribute("userId", claims.get("userId"));
                 return true;
+                
             } catch (Exception e) {
                 sendResponse(exchange, 401, "{\"error\":\"Invalid or expired token\"}");
                 return false;
             }
-        }
+                
+            }
     }
