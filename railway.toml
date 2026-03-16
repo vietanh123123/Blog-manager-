@@ -1,6 +1,5 @@
 [build]
 buildCommand = """
-apt-get update -qq && apt-get install -y -qq openjdk-21-jdk-headless &&
 mkdir -p lib &&
 curl -L -o lib/postgresql-42.7.3.jar https://jdbc.postgresql.org/download/postgresql-42.7.3.jar &&
 curl -L -o lib/bcrypt-0.10.2.jar https://repo1.maven.org/maven2/at/favre/lib/bcrypt/0.10.2/bcrypt-0.10.2.jar &&
