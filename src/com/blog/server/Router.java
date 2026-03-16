@@ -5,7 +5,10 @@
     import com.sun.net.httpserver.HttpHandler;
 
     import java.io.IOException;
+    import java.util.Arrays;
+    import java.util.HashSet;
     import java.util.HashMap;
+    import java.util.Set;
     import java.util.Map;
     import java.util.function.BiConsumer;
     import java.util.regex.Matcher;
@@ -44,6 +47,16 @@
      *   pathVariables = extracted {id} values from the URL as a Map
      */
     public class Router implements HttpHandler {
+
+        private static final Set<String> DEFAULT_ALLOWED_ORIGINS = Set.of(
+            "http://127.0.0.1:5500",
+            "http://localhost:5500",
+            "http://localhost:8080",
+            "https://blogmanagersaar.netlify.app",
+            "https://blog-manager-production-6034.up.railway.app"
+        );
+
+        private static final Set<String> ALLOWED_ORIGINS = loadAllowedOrigins();
 
         /**
          * Represents one registered route.
@@ -177,11 +190,34 @@
          */
         private void addCorsHeaders(HttpExchange exchange) {
             var headers = exchange.getResponseHeaders();
-            headers.set("Access-Control-Allow-Origin", "http://127.0.0.1:5500"); //  frontend origin
+            String requestOrigin = exchange.getRequestHeaders().getFirst("Origin");
+            if (requestOrigin != null && ALLOWED_ORIGINS.contains(requestOrigin)) {
+                headers.set("Access-Control-Allow-Origin", requestOrigin);
+            }
             headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
             headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
             headers.set("Access-Control-Allow-Credentials", "true"); // ← add this to allow cookies
+            headers.set("Vary", "Origin");
             headers.set("Content-Type", "application/json");
+        }
+
+        private static Set<String> loadAllowedOrigins() {
+            String raw = System.getenv("CORS_ALLOWED_ORIGINS");
+            if (raw == null || raw.isBlank()) {
+                return DEFAULT_ALLOWED_ORIGINS;
+            }
+
+            Set<String> parsed = new HashSet<>();
+            Arrays.stream(raw.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .forEach(parsed::add);
+
+            if (parsed.isEmpty()) {
+                return DEFAULT_ALLOWED_ORIGINS;
+            }
+
+            return parsed;
         }
 
         /**

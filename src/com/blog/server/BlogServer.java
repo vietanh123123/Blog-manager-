@@ -43,7 +43,7 @@ import java.util.concurrent.Executors;
  */
 public class BlogServer {
 
-    private static final int PORT = 8080;
+    private static final int DEFAULT_PORT = 8080;
 
     public static void main(String[] args) throws IOException {
         System.out.println("═══════════════════════════════════");
@@ -82,10 +82,12 @@ public class BlogServer {
         System.out.println("   PUT    /api/articles/{id}");
         System.out.println("   DELETE /api/articles/{id}");
 
+        int port = resolvePort();
+
         // ── STEP 4: Start the HTTP Server ─────────────────────────
         // HttpServer.create() sets up a TCP socket on the given port.
         // InetSocketAddress(PORT) = listen on all network interfaces, port 8080.
-        HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
+        HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
 
         // Mount our router on the "/" path.
         // All requests to any URL will go through our router.
@@ -102,9 +104,22 @@ public class BlogServer {
         server.start();
 
         System.out.println("\n✅ Blog backend is running!");
-        System.out.println("   API:     http://localhost:" + PORT + "/api/articles");
-        System.out.println("   Test:    http://localhost:" + PORT + "/api/articles/published");
+        System.out.println("   API:     http://localhost:" + port + "/api/articles");
+        System.out.println("   Test:    http://localhost:" + port + "/api/articles/published");
         System.out.println("\n   Press Ctrl+C to stop the server.");
         System.out.println("═══════════════════════════════════\n");
+    }
+
+    private static int resolvePort() {
+        String envPort = System.getenv("PORT");
+        if (envPort == null || envPort.isBlank()) {
+            return DEFAULT_PORT;
+        }
+
+        try {
+            return Integer.parseInt(envPort.trim());
+        } catch (NumberFormatException ignored) {
+            return DEFAULT_PORT;
+        }
     }
 }
