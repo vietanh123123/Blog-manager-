@@ -11,4 +11,3 @@ cp src/db.properties out/
 
 [deploy]
 startCommand = "java -cp out:lib/postgresql-42.7.3.jar:lib/bcrypt-0.10.2.jar:lib/bytes-1.6.1.jar com.blog.server.BlogServer"
-healthcheckPath = "/api/articles/published"
