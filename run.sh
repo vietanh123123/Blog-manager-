@@ -30,14 +30,14 @@ BYTES_JAR="$LIB_DIR/bytes-1.6.1.jar"
 echo "🔍 Checking prerequisites..."
 
 if ! command -v javac &> /dev/null; then
-    echo "❌ javac not found. Install Java 17+ JDK from https://adoptium.net/"
+    echo "❌ javac not found. Install Java 21+ JDK from https://adoptium.net/"
     exit 1
 fi
 
 JAVA_VER=$(javac -version 2>&1 | awk '{print $2}' | cut -d. -f1)
 echo "   Java version: $JAVA_VER"
-if [ "$JAVA_VER" -lt 17 ]; then
-    echo "❌ Java 17+ required. Found version $JAVA_VER."
+if [ "$JAVA_VER" -lt 21 ]; then
+    echo "❌ Java 21+ required. Found version $JAVA_VER."
     exit 1
 fi
 

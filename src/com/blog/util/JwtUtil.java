@@ -8,7 +8,7 @@ import com.blog.util.JsonUtil;
 
 public class JwtUtil {
 
-    private static final String SECRET = "7f14d7abf3eeb14834598627a31c75a0b84b15aaa333fc8e5f430d7dd7221764";
+    private static final String SECRET = System.getenv("JWT_SECRET");
     private static final long EXPIRY_MS = 1000 * 60 * 10; // 10 minutes
 
     public static String generateToken(long userId, String email) {
