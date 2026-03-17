@@ -289,37 +289,29 @@ public class ArticleController {
     }
 
     /**
-     * AUTHENTICATE USER from Cookie/JWT token.
-     * 
+     * AUTHENTICATE USER from Authorization Bearer token.
+     *
      * Returns the user Map if authenticated, or null if authentication fails.
      * When null is returned, an error response has already been sent.
      */
     private Map<String, String> authenticateUser(HttpExchange exchange) {
-        List<String> cookies = exchange.getRequestHeaders().get("Cookie");
-        if (cookies == null || cookies.isEmpty()) {
-            Router.sendError(exchange, 401, "Unauthorized: Please log in.");
+        String authorization = exchange.getRequestHeaders().getFirst("Authorization");
+        if (authorization == null || authorization.isBlank()) {
+            Router.sendError(exchange, 401, "Unauthorized: Missing Authorization header.");
             return null;
         }
-        
-        // Extract the token from the Cookie header
-        String token = null;
-        for (String cookieHeader : cookies) {
-            String[] cookiePairs = cookieHeader.split(";");
-            for (String pair : cookiePairs) {
-                String[] keyValue = pair.trim().split("=", 2);
-                if (keyValue.length == 2 && "token".equals(keyValue[0])) {
-                    token = keyValue[1];
-                    break;
-                }
-            }
-            if (token != null) break;
-        }
-        
-        if (token == null) {
-            Router.sendError(exchange, 401, "Unauthorized: Please log in.");
+
+        if (!authorization.startsWith("Bearer ")) {
+            Router.sendError(exchange, 401, "Unauthorized: Invalid Authorization format.");
             return null;
         }
-        
+
+        String token = authorization.substring("Bearer ".length()).trim();
+        if (token.isBlank()) {
+            Router.sendError(exchange, 401, "Unauthorized: Empty token.");
+            return null;
+        }
+
         try {
             Map<String, String> user = JwtUtil.verifyToken(token);
             return user;

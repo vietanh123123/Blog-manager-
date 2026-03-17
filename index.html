@@ -830,6 +830,9 @@
 
     // ─── STATE ───────────────────────────────────────────────
     let currentUser = null;
+    let authToken = localStorage.getItem('blogToken');
+    const savedUser = localStorage.getItem('blogUsername');
+    if (savedUser) currentUser = savedUser;
     let editingId = null;
 
     // ─── HELPERS ─────────────────────────────────────────────
@@ -880,9 +883,11 @@
     async function apiFetch(method, path, body) {
         const opts = {
             method,
-            credentials: 'include',
             headers: {}
         };
+        if (authToken) {
+            opts.headers['Authorization'] = `Bearer ${authToken}`;
+        }
         if (body) {
             opts.headers['Content-Type'] = 'application/json';
             opts.body = JSON.stringify(body);
@@ -895,7 +900,14 @@
     async function login(username, password) {
         const res = await apiFetch('POST', '/auth/login', { username, password });
         if (!res.ok) throw new Error('Invalid username or password.');
-        return username;
+        const payload = await res.json();
+        if (!payload.token) throw new Error('Missing token in login response.');
+
+        authToken = payload.token;
+        currentUser = payload.username || username;
+        localStorage.setItem('blogToken', authToken);
+        localStorage.setItem('blogUsername', currentUser);
+        return currentUser;
     }
 
     async function register(username, password) {
@@ -907,7 +919,10 @@
     }
 
     function logout() {
+        authToken = null;
         currentUser = null;
+        localStorage.removeItem('blogToken');
+        localStorage.removeItem('blogUsername');
         updateHeader();
         
         // Clear the input fields so the next user doesn't see them
@@ -1018,13 +1033,12 @@
         btn.disabled = true;
         try {
             await login(user, pass);
-            currentUser = user;
             updateHeader();
             document.getElementById('loginUser').value = '';
             document.getElementById('loginPass').value = '';
             showPage('dashboardPage');
             renderDashboard();
-            toast('Welcome back, ' + user + '!');
+            toast('Welcome back, ' + currentUser + '!');
         } catch (err) {
             setError('loginError', err.message);
         } finally {
@@ -1055,13 +1069,12 @@
         try {
             await register(user, pass);
             await login(user, pass);
-            currentUser = user;
             updateHeader();
             document.getElementById('regUser').value = '';
             document.getElementById('regPass').value = '';
             showPage('dashboardPage');
             renderDashboard();
-            toast('Account created! Welcome, ' + user + ' 🎉');
+            toast('Account created! Welcome, ' + currentUser + ' 🎉');
         } catch (err) {
             setError('registerError', err.message);
         } finally {
@@ -1140,6 +1153,10 @@
     document.getElementById('cancelEditBtn').addEventListener('click', () => { showPage('dashboardPage'); });
 
     updateHeader();
+    if (authToken && currentUser) {
+        showPage('dashboardPage');
+        renderDashboard();
+    }
 </script>
 </body>
 </html>

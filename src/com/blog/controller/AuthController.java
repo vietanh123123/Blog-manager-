@@ -50,7 +50,10 @@ import java.util.Optional;
                     String body = readRequestBody(exchange);
                     Map<String, String> fields = JsonUtil.parseJsonBody(body);
 
-                    if (fields.get("username") == null || fields.get("password") == null || fields.get("username").isBlank() || fields.get("password").isBlank()) {
+                    String username = fields.get("username");
+                    String password = fields.get("password");
+
+                    if (username == null || password == null || username.isBlank() || password.isBlank()) {
                         String error = "{\"error\":\"username and password are required\"}";
                         exchange.getResponseHeaders().set("Content-Type", "application/json");
                         exchange.sendResponseHeaders(400, error.length());
@@ -60,16 +63,17 @@ import java.util.Optional;
                     }
 
                     String token = authService.login(fields);
-    
-                    // Set token in HTTP-only cookie with 15-minute expiry
-                    String cookieValue = String.format(
-                         "token=%s; HttpOnly; Secure; SameSite=None; Max-Age=900; Path=/",
-                        token
+
+                    // Return JWT in response body for Bearer token flow
+                    sendResponse(
+                        exchange,
+                        200,
+                        "{\"message\":\"Login successful\",\"token\":\""
+                            + token
+                            + "\",\"username\":\""
+                            + username.replace("\"", "\\\"")
+                            + "\"}"
                     );
-                    exchange.getResponseHeaders().set("Set-Cookie", cookieValue);
-                    
-                    // Return success message
-                    sendResponse(exchange, 200, "{\"message\":\"Login successful\"}");
                 } catch (Exception e) {
                     e.printStackTrace();
                     try {
