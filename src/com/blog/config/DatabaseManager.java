@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -57,9 +58,19 @@ public class DatabaseManager {
             throw new RuntimeException("Failed to load db.properties", e);
         }
 
-        this.url      = props.getProperty("db.url");
-        this.username = props.getProperty("db.username");
-        this.password = props.getProperty("db.password");
+        String resolvedUrl = resolveConfigValue(props, "db.url", "DB_URL", "DATABASE_URL");
+        resolvedUrl = normalizeJdbcUrl(resolvedUrl);
+
+        String resolvedUsername = resolveConfigValue(props, "db.username", "DB_USERNAME", "PGUSER", "POSTGRES_USER");
+        String resolvedPassword = resolveConfigValue(props, "db.password", "DB_PASSWORD", "PGPASSWORD", "POSTGRES_PASSWORD");
+
+        if (resolvedUrl == null || resolvedUrl.isBlank()) {
+            throw new RuntimeException("Database URL is missing. Set db.url in db.properties or env DB_URL / DATABASE_URL.");
+        }
+
+        this.url = resolvedUrl;
+        this.username = resolvedUsername;
+        this.password = resolvedPassword;
 
         // Load the PostgreSQL JDBC driver class into memory.
         // In Spring, this happened automatically. Here we do it explicitly.
@@ -71,6 +82,54 @@ public class DatabaseManager {
                     "PostgreSQL JDBC driver not found! Make sure postgresql-*.jar is in the lib/ folder.", e
             );
         }
+    }
+
+    private String resolveConfigValue(Properties props, String key, String... envFallbackKeys) {
+        String value = props.getProperty(key);
+        if (value != null) {
+            value = value.trim();
+        }
+
+        if (value != null && value.startsWith("${") && value.endsWith("}")) {
+            String envKey = value.substring(2, value.length() - 1).trim();
+            String envValue = System.getenv(envKey);
+            if (envValue != null && !envValue.isBlank()) {
+                return envValue.trim();
+            }
+            value = null;
+        }
+
+        if (value != null && !value.isBlank()) {
+            return value;
+        }
+
+        Map<String, String> env = System.getenv();
+        for (String envKey : envFallbackKeys) {
+            String envValue = env.get(envKey);
+            if (envValue != null && !envValue.isBlank()) {
+                return envValue.trim();
+            }
+        }
+
+        return null;
+    }
+
+    private String normalizeJdbcUrl(String rawUrl) {
+        if (rawUrl == null || rawUrl.isBlank()) {
+            return rawUrl;
+        }
+
+        String url = rawUrl.trim();
+        if (url.startsWith("jdbc:postgresql://")) {
+            return url;
+        }
+        if (url.startsWith("postgresql://")) {
+            return "jdbc:" + url;
+        }
+        if (url.startsWith("postgres://")) {
+            return "jdbc:postgresql://" + url.substring("postgres://".length());
+        }
+        return url;
     }
 
     /**
@@ -102,6 +161,9 @@ public class DatabaseManager {
      * @throws SQLException if connection fails (wrong password, DB not running, etc.)
      */
     public Connection getConnection() throws SQLException {
+        if ((username == null || username.isBlank()) && (password == null || password.isBlank())) {
+            return DriverManager.getConnection(url);
+        }
         return DriverManager.getConnection(url, username, password);
     }
 
