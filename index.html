@@ -909,6 +909,13 @@
     function logout() {
         currentUser = null;
         updateHeader();
+        
+        // Clear the input fields so the next user doesn't see them
+        document.getElementById('loginUser').value = '';
+        document.getElementById('loginPass').value = '';
+        document.getElementById('regUser').value = '';
+        document.getElementById('regPass').value = '';
+
         showPage('welcomePage');
         toast('You\'ve been logged out.');
     }
@@ -1002,8 +1009,8 @@
 
     document.getElementById('loginSubmitBtn').addEventListener('click', async () => {
         const btn = document.getElementById('loginSubmitBtn');
-        const user = document.getElementById('loginUser').value.trim();
-        const pass = document.getElementById('loginPass').value;
+        const user = document.getElementById('loginUser').value.replace(/\s+/g, '');
+        const pass = document.getElementById('loginPass').value.replace(/\s+/g, '');
         setError('loginError', '');
         if (!user || !pass) { setError('loginError', 'Please fill in all fields.'); return; }
 
@@ -1037,8 +1044,8 @@
 
     document.getElementById('registerSubmitBtn').addEventListener('click', async () => {
         const btn = document.getElementById('registerSubmitBtn');
-        const user = document.getElementById('regUser').value.trim();
-        const pass = document.getElementById('regPass').value;
+        const user = document.getElementById('regUser').value.replace(/\s+/g, '');
+        const pass = document.getElementById('regPass').value.replace(/\s+/g, '');
         setError('registerError', '');
         if (!user || !pass) { setError('registerError', 'Please fill in all fields.'); return; }
         if (pass.length < 4) { setError('registerError', 'Password must be at least 4 characters.'); return; }
