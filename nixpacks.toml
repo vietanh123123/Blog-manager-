@@ -1,0 +1,12 @@
+[phases.setup]
+nixPkgs = ["jdk21", "curl"]
+
+[phases.build]
+cmds = [
+  "mkdir -p out",
+  "javac -cp lib/postgresql-42.7.3.jar:lib/bcrypt-0.10.2.jar:lib/bytes-1.6.1.jar -d out $(find src -name '*.java')",
+  "cp src/db.properties out/"
+]
+
+[start]
+cmd = "java -cp out:lib/postgresql-42.7.3.jar:lib/bcrypt-0.10.2.jar:lib/bytes-1.6.1.jar com.blog.server.BlogServer"

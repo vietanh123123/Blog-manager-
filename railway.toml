@@ -1,9 +1,5 @@
 [build]
 buildCommand = """
-mkdir -p lib &&
-curl -L -o lib/postgresql-42.7.3.jar https://jdbc.postgresql.org/download/postgresql-42.7.3.jar &&
-curl -L -o lib/bcrypt-0.10.2.jar https://repo1.maven.org/maven2/at/favre/lib/bcrypt/0.10.2/bcrypt-0.10.2.jar &&
-curl -L -o lib/bytes-1.6.1.jar https://repo1.maven.org/maven2/at/favre/lib/bytes/1.6.1/bytes-1.6.1.jar &&
 mkdir -p out &&
 javac -cp lib/postgresql-42.7.3.jar:lib/bcrypt-0.10.2.jar:lib/bytes-1.6.1.jar -d out $(find src -name '*.java') &&
 cp src/db.properties out/
