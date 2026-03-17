@@ -2,6 +2,10 @@ package com.blog.config;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -34,6 +38,8 @@ import java.util.Properties;
  */
 public class DatabaseManager {
 
+    private record ResolvedDbConfig(String url, String username, String password) {}
+
     // The single instance of this class (Singleton pattern)
     private static DatabaseManager instance;
 
@@ -59,10 +65,13 @@ public class DatabaseManager {
         }
 
         String resolvedUrl = resolveConfigValue(props, "db.url", "DB_URL", "DATABASE_URL");
-        resolvedUrl = normalizeJdbcUrl(resolvedUrl);
-
         String resolvedUsername = resolveConfigValue(props, "db.username", "DB_USERNAME", "PGUSER", "POSTGRES_USER");
         String resolvedPassword = resolveConfigValue(props, "db.password", "DB_PASSWORD", "PGPASSWORD", "POSTGRES_PASSWORD");
+
+        ResolvedDbConfig resolvedConfig = normalizeJdbcConfig(resolvedUrl, resolvedUsername, resolvedPassword);
+        resolvedUrl = resolvedConfig.url();
+        resolvedUsername = resolvedConfig.username();
+        resolvedPassword = resolvedConfig.password();
 
         if (resolvedUrl == null || resolvedUrl.isBlank()) {
             throw new RuntimeException("Database URL is missing. Set db.url in db.properties or env DB_URL / DATABASE_URL.");
@@ -114,22 +123,64 @@ public class DatabaseManager {
         return null;
     }
 
-    private String normalizeJdbcUrl(String rawUrl) {
+    private ResolvedDbConfig normalizeJdbcConfig(String rawUrl, String username, String password) {
         if (rawUrl == null || rawUrl.isBlank()) {
-            return rawUrl;
+            return new ResolvedDbConfig(rawUrl, username, password);
         }
 
         String url = rawUrl.trim();
         if (url.startsWith("jdbc:postgresql://")) {
-            return url;
+            return new ResolvedDbConfig(url, username, password);
         }
-        if (url.startsWith("postgresql://")) {
-            return "jdbc:" + url;
+
+        if (url.startsWith("postgresql://") || url.startsWith("postgres://")) {
+            try {
+                URI uri = new URI(url);
+                String host = uri.getHost();
+                if (host == null || host.isBlank()) {
+                    return new ResolvedDbConfig(url, username, password);
+                }
+
+                StringBuilder jdbc = new StringBuilder("jdbc:postgresql://").append(host);
+                if (uri.getPort() != -1) {
+                    jdbc.append(":").append(uri.getPort());
+                }
+
+                String path = uri.getRawPath();
+                if (path != null && !path.isBlank()) {
+                    jdbc.append(path);
+                }
+
+                String query = uri.getRawQuery();
+                if (query != null && !query.isBlank()) {
+                    jdbc.append("?").append(query);
+                }
+
+                String outUsername = username;
+                String outPassword = password;
+                String userInfo = uri.getRawUserInfo();
+                if (userInfo != null && !userInfo.isBlank()) {
+                    String[] parts = userInfo.split(":", 2);
+                    String parsedUser = URLDecoder.decode(parts[0], StandardCharsets.UTF_8);
+                    String parsedPass = parts.length > 1
+                            ? URLDecoder.decode(parts[1], StandardCharsets.UTF_8)
+                            : "";
+
+                    if (outUsername == null || outUsername.isBlank()) {
+                        outUsername = parsedUser;
+                    }
+                    if (outPassword == null || outPassword.isBlank()) {
+                        outPassword = parsedPass;
+                    }
+                }
+
+                return new ResolvedDbConfig(jdbc.toString(), outUsername, outPassword);
+            } catch (URISyntaxException ignored) {
+                return new ResolvedDbConfig(url, username, password);
+            }
         }
-        if (url.startsWith("postgres://")) {
-            return "jdbc:postgresql://" + url.substring("postgres://".length());
-        }
-        return url;
+
+        return new ResolvedDbConfig(url, username, password);
     }
 
     /**
