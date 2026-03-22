@@ -1,4 +1,4 @@
-# BlogWritter2
+# BlogWritter
 
 This project is a full-stack blog management application built with a **plain Java backend** (no Spring), **PostgreSQL**, and a **vanilla HTML/CSS/JS frontend**. It provides user authentication with JWT, secure password hashing with BCrypt, and complete CRUD operations for articles scoped per user account.
 
